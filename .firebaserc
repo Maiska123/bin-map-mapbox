@@ -1,0 +1,11 @@
+{
+  "targets": {
+    "bin-map-mapbox": {
+      "hosting": {
+        "bin-map-mapbox": [
+          "bin-map-mapbox"
+        ]
+      }
+    }
+  }
+}

@@ -121,8 +121,13 @@
               "devServerTarget": "bin-map-mapbox:serve:production"
             }
           }
+        },
+        "deploy": {
+          "builder": "@angular/fire:deploy",
+          "options": {}
         }
       }
-    }},
+    }
+  },
   "defaultProject": "bin-map-mapbox"
 }
