@@ -450,6 +450,7 @@ export class MapBoxComponent implements OnInit{
 
       if (Array.from(markerIndex)[0]) {coords = this.offlineMarkerData[Array.from(markerIndex)[0]].geometry.coordinates;
       assignBtn.innerHTML = `<button class="btn btn-primary" (click)="flyToCoords(coords)">${ this.offlineMarkerData[Array.from(markerIndex)[0]].properties.message }</button>`;
+      this.flyToCoords(coords);
       }
       markerIndex.forEach(index => {
         console.log(index);
@@ -876,8 +877,12 @@ routeFunction(req) {
   // class="mapboxgl-ctrl-bottom-left"
   getNearestRoskis() {
 
+    // problem with offlinedata
+    // gives nearest to be 7km away
+
     var routeLengths: Set<any> = new Set();
     var arrayOfMarkers = Array.from(this.markersToDisplay);
+    // var arrayOfMarkers = Array.from(JSON.parse(localStorage.getItem('markers')));
 
     for (let [index, value] of arrayOfMarkers.entries()) {
     // this.markersToDisplay.forEach(function (value, index) {
