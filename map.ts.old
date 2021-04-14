@@ -1,0 +1,38 @@
+
+import { Injectable } from '@angular/core';
+import { environment } from '../environments/environment';
+import { GeoJson } from './map';
+import * as mapboxgl from 'mapbox-gl';
+import 'firebase/firestore';
+import { AngularFireDatabase, AngularFireList } from 'angularfire2/database';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
+
+
+@Injectable()
+export class MapService {
+  itemsRef: AngularFireList<any>;
+  items: Observable<any[]>;
+
+  constructor(private db: AngularFireDatabase) {
+    mapboxgl.accessToken = environment.mapbox.accessToken;
+
+    this.itemsRef = db.list('markers');
+    this.items = this.itemsRef.snapshotChanges().pipe(map(changes => {
+      return changes.map(c => ({ key: c.key, ...c.payload.val() }));
+    }));
+  }
+
+  getMarkers() {
+    return this.items;
+  }
+
+  createMarker(data: GeoJson) {
+    return this.itemsRef.push(data);
+  }
+
+  removeMarker($key: string) {
+    return this.itemsRef.remove($key);
+  }
+
+}

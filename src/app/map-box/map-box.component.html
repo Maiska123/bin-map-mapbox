@@ -1,0 +1,76 @@
+<!-- <input type="text" [(ngModel)]="message" placeholder="your message..."> -->
+<div (onLongPress)="isOpen = !isOpen" style="z-index: 10;" class="map" id="map"></div>
+<div class="heading">
+  <h1 class="h1" id="h1" style="color: aliceblue;">Distance To Nearest Roskis: {{distanceToRoskis}}m</h1>
+</div>
+
+
+
+<button class="btn btn-info" (click)="makeObject()">New objectArray</button>
+<button class="btn btn-info" (click)="sendToSpace()">Send to Cloud</button>
+<!-- This button triggers the overlay and is it's origin -->
+<button (click)="isOpen = !isOpen" type="button" cdkOverlayOrigin #trigger="cdkOverlayOrigin">
+  {{isOpen ? "Close" : "Open"}}
+</button>
+
+<!-- This template displays the overlay content and is connected to the button -->
+
+<ng-template
+  cdkConnectedOverlay
+  [cdkConnectedOverlayOrigin]="trigger"
+  [cdkConnectedOverlayOpen]="isOpen"
+>
+  <ul class="example-list">
+    <li>  coordinates  </li>
+    <li><input type="file" name="input"
+      id="input"></li>
+    <li><textarea cols="30" rows="20"
+              placeholder="text will appear here">
+    </textarea></li>
+    <li>End of Coordinates</li>
+  </ul>
+</ng-template>
+
+<button class="btn btn-warning" (click)="flyToUser()">Back To User</button>
+<button class="btn btn-danger" (click)="getNearestRoskis()">Get Nearest Roskis</button>
+<button class="btn btn-secondary" (click)="flyToCurrentRoskis()">Fly To the Nearest Roskis</button>
+<button class="btn btn-info" (click)="cameraMovement()">Rotate Camera</button>
+
+
+ <!-- <div *ngFor="let marker of markersToDisplay"> | async
+  <button class="btn btn-primary" (click)="flyTo(marker)">{{ marker.properties.message }}</button>
+  <button class="btn btn-success" (click)="getRoute(marker.geometry.coordinates)">Route to: {{ marker.properties.message }}</button>
+  <button class="btn btn-warning" (click)="removeMarker(marker)">Delete</button>
+</div>
+-->
+
+<!--
+
+<div class="row row-map">
+  <div class="col-md-9">
+      <h2 class="heading">Map</h2>
+      <hr/>
+    <div id="map"></div>
+  </div>
+  <div class="col-md-3 info-container">
+    <div id="run-info">
+      <h2 class="heading">Run Data</h2>
+      <hr/>
+      <div class="data-heading">Route Name:</div>
+      <p class="data-entry">{{ activityName }}</p>
+      <hr/>
+
+      <div class="data-heading">Date:</div>
+      <p class="data-entry">{{ activityDate | date:"longDate" }} <p>
+      <hr/>
+
+      <div class="data-heading">Total Distance:</div>
+      <p class="data-entry">{{ activityDistance }} miles</p>
+      <hr/>
+
+      <div class="data-heading">Comments:</div>
+      <p class="data-entry">{{ activityComments }}</p>
+      <hr/>
+    </div>
+  </div>
+</div> -->
