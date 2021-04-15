@@ -13,6 +13,8 @@
   margin-bottom: 2px !important;
   margin-left: 1px !important;
   margin-right: 1px !important;
+
+  flex: auto;
 }
 
 .example-list > li {
@@ -40,7 +42,7 @@
   pointer-events: auto;
 }
 
-#map{ height: 400px; }
+#map{ height: 100vh; }
 $b: 1.5em; // border-width
 $blur: blur(9px);
 $rect: inset(0);

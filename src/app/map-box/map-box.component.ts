@@ -1,3 +1,4 @@
+import { Coordinate } from './../utils/interfaces';
 
 import { MapService } from './../map.service';
 import { Component, OnInit } from '@angular/core';
@@ -124,6 +125,10 @@ export class MapBoxComponent implements OnInit{
   ngOnInit() {
     // Get markers from mapService
 
+    this.mapService.getLocation().subscribe(rep => {
+      // do something with Rep, Rep will have the data you desire.
+      this.flyToUserService(rep);
+   });
 
     this.initializeMap()
 
@@ -343,6 +348,8 @@ export class MapBoxComponent implements OnInit{
       zoom: 16,
       maxZoom: 19,
       minZoom: 10,
+      minPitch: 0,
+      maxPitch: 67,
       center: [this.lng, this.lat]
     });
 
@@ -395,7 +402,7 @@ export class MapBoxComponent implements OnInit{
         [event.lngLat.lng + 0.0005, event.lngLat.lat + 0.0005]
         ];
 
-      console.log(bbox);
+      //console.log(bbox);
 
       var bboxCoord1: Coordinate = {
         lon: bbox[0][0],
@@ -448,29 +455,32 @@ export class MapBoxComponent implements OnInit{
       routeBtn.innerHTML = `<button class="btn btn-success btn-simple text-white" >Get Route</button>`;
       markerNewBtn.innerHTML = `<button class="btn btn-success btn-simple text-white" >New Marker</button>`;
 
-      if (Array.from(markerIndex)[0]) {coords = this.offlineMarkerData[Array.from(markerIndex)[0]].geometry.coordinates;
-      assignBtn.innerHTML = `<button class="btn btn-primary" (click)="flyToCoords(coords)">${ this.offlineMarkerData[Array.from(markerIndex)[0]].properties.message }</button>`;
+      if (Array.from(markerIndex)[0]) {
+        var nearestPointIndex = this.getNearestPoint(Array.from(markerIndex),coordinates);
+        coords = this.offlineMarkerData[nearestPointIndex].geometry.coordinates;
+      assignBtn.innerHTML = `<button class="btn btn-primary" (click)="flyToCoords(coords)">${ this.offlineMarkerData[Array.from(markerIndex)[0]].properties.message } : ${nearestPointIndex}</button>`;
       this.flyToCoords(coords);
       }
-      markerIndex.forEach(index => {
-        console.log(index);
 
-        // jokaista napinpainalluksen alueelle sisältyvää kohden fly to nappi
-        coords = this.offlineMarkerData[index].geometry.coordinates;
+      // markerIndex.forEach(index => {
+      //   console.log(index);
 
-        console.log(coords);
-        this.messageInBubble = this.offlineMarkerData[index].properties.message;
-        //assignBtn.innerHTML = `<button class="btn btn-primary" (click)="flyTo(coords)">noh</button>`;
-        assignBtn.innerHTML = `<button class="btn btn-primary" (click)="flyToCoords(coords)">${ this.messageInBubble }</button>`;
-        // assignBtn.innerHTML = `<button class="btn btn-success btn-simple text-white" >Do Something</button>`;
-        divElement.appendChild(assignBtn);
-        console.log(assignBtn);
+      //   // jokaista napinpainalluksen alueelle sisältyvää kohden fly to nappi
+      //   coords = this.offlineMarkerData[index].geometry.coordinates;
 
-      });
+      //   console.log(coords);
+      //   this.messageInBubble = this.offlineMarkerData[index].properties.message;
+      //   //assignBtn.innerHTML = `<button class="btn btn-primary" (click)="flyTo(coords)">noh</button>`;
+      //   assignBtn.innerHTML = `<button class="btn btn-primary" (click)="flyToCoords(coords)">${ this.messageInBubble }</button>`;
+      //   // assignBtn.innerHTML = `<button class="btn btn-success btn-simple text-white" >Do Something</button>`;
+      //   divElement.appendChild(assignBtn);
+      //   console.log(assignBtn);
+
+      // });
 
       divElement.innerHTML = innerHtmlContent;
       divElement.appendChild(routeBtn);
-      divElement.appendChild(markerNewBtn);
+
       divElement.appendChild(assignBtn);
 
       // btn.className = 'btn';
@@ -482,8 +492,9 @@ export class MapBoxComponent implements OnInit{
       //   .setDOMContent(divElement);
 
 
+
       var popup = new mapboxgl.Popup()
-        .setLngLat(coordinates) // eslint-disable-line no-use-before-define
+        .setLngLat(this.clickedBinCoords(markerIndex, coords, coordinates)) // eslint-disable-line no-use-before-define
         //.setHTML(description)
         .addTo(this.map)
         .setDOMContent(divElement);
@@ -491,20 +502,25 @@ export class MapBoxComponent implements OnInit{
         //console.log(description);
         //console.log();
 
-        markerNewBtn.addEventListener('click', (e) => {
-        console.log('Button clicked' + name);
-        this.mapService.createMarker(newMarker)
-        popup.remove();
-      });
+        if (!Array.from(markerIndex)[0]) {
+
+          divElement.appendChild(markerNewBtn);
+
+          markerNewBtn.addEventListener('click', (e) => {
+            console.log('Button clicked' + name);
+            this.mapService.createMarker(newMarker)
+            popup.remove();
+          });
+        }
 
       routeBtn.addEventListener('click', (e) => {
-        console.log('Button clicked' + name);
+        // console.log('Button clicked' + name);
         this.getRoute(coordinates);
         popup.remove();
       });
 
       assignBtn.addEventListener('click', (e) => {
-        console.log('Button clicked' + name);
+        // console.log('Button clicked' + name);
         this.flyToCoords(coords);
         popup.remove();
       });
@@ -529,7 +545,7 @@ export class MapBoxComponent implements OnInit{
         this.map.keyboard.enable();
 
         var noLocalData:boolean = localStorage.getItem('markers') == null;
-        console.log(noLocalData);
+        // console.log(noLocalData);
 
         if (noLocalData){
           this.markers = this.mapService.getMarkers()
@@ -684,6 +700,7 @@ export class MapBoxComponent implements OnInit{
   }
 
   flyTo(data: GeoJson) {
+    this.cameraRotate = !this.cameraRotate;
     this.map.flyTo({
       center: data.geometry.coordinates, // eslint-disable-line no-use-before-define
       zoom: 17
@@ -691,6 +708,7 @@ export class MapBoxComponent implements OnInit{
   }
 
   flyToCoords(coords: any[]) {
+    this.cameraRotate = !this.cameraRotate;
     this.map.flyTo({
       center: coords, // eslint-disable-line no-use-before-define
       zoom: 17
@@ -698,25 +716,70 @@ export class MapBoxComponent implements OnInit{
   }
 
   flyToCurrentRoskis() {
+    this.cameraRotate = !this.cameraRotate;
     this.map.flyTo({
       center: this.currentRoskis, // eslint-disable-line no-use-before-define
       zoom: 17
     })
   }
 
-  flyToUser() {
+  flyToUserService(rep){
 
+    // console.log(rep.coords.latitude);
+    // console.log(rep.coords.longitude);
+
+    this.flyToCoords([rep.coords.longitude,rep.coords.latitude])
+  }
+
+  flyToUser() {
+    this.cameraRotate = !this.cameraRotate;
+    var start: any[] = [];
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(position => {
-       this.lat = position.coords.latitude;
-       this.lng = position.coords.longitude;
-     });
-   }
+      this.lat = position.coords.latitude;
+      this.lng = position.coords.longitude;
+      start = [this.lng, this.lat]
 
-    this.map.flyTo({
-      center: [this.lng, this.lat],
-      zoom: 17
-    })
+
+      this.map.removeLayer('point');
+      this.map.removeSource('point');
+
+        // Add starting point to the map
+        this.map.addLayer({
+          id: 'point',
+          type: 'circle',
+          source: {
+            type: 'geojson',
+            data: {
+              type: 'FeatureCollection',
+              features: [{
+                type: 'Feature',
+                properties: {},
+                geometry: {
+                  type: 'Point',
+                  coordinates: start
+                }
+              }
+              ]
+            }
+          },
+          paint: {
+            'circle-radius': 10,
+            'circle-color': '#3887be',
+            'circle-stroke-color': 'black',
+            'circle-stroke-width': 1,
+          }
+        });
+
+
+
+      this.map.flyTo({
+        center: [this.lng, this.lat],
+        zoom: 17
+      })
+    });
+
+    }
   }
 
 
@@ -825,7 +888,7 @@ routeFunction(req) {
 
   var data = json.routes[0];
   // data.distance: 926.09
-  console.log(Math.ceil(Math.round(data.distance)/5)*5);
+  // console.log(Math.ceil(Math.round(data.distance)/5)*5);
   // Math.ceil(Math.round(data.distance)/5)*5: 930
   this.distanceToRoskis = Math.ceil(Math.round(data.distance)/5)*5;
   var route = data.geometry.coordinates;
@@ -875,12 +938,72 @@ routeFunction(req) {
   // find these and hide
   // class="mapboxgl-ctrl mapboxgl-ctrl-attrib"
   // class="mapboxgl-ctrl-bottom-left"
+
+getNearestPoint(fromCoordindexes: any[],pointCoordinates: any[]): number{
+
+      // Return index of nearest point
+  var arrayOfMatches = [];
+  var routeLengths: any[] = [[],[]]; //: Set<any> = new Set();
+  var arrayOfMarkers = Array.from(this.markersToDisplay);
+
+  fromCoordindexes.forEach((element) => {
+    arrayOfMatches.push(arrayOfMarkers[element]);
+    routeLengths[0].push(element);
+  });
+  // var arrayOfMarkers = Array.from(JSON.parse(localStorage.getItem('markers')));
+  // console.log(fromCoordindexes);
+  // console.log(arrayOfMatches);
+
+  for (let value of arrayOfMatches) {
+    // console.log('value');
+
+    // console.log(value);
+  // this.markersToDisplay.forEach(function (value, index) {
+
+
+    // console.log('pointCoordinates');
+    // console.log(pointCoordinates);
+
+    const R = 6371e3; // metres
+    const φ1 = pointCoordinates[0] * Math.PI/180; // φ, λ in radians
+    const φ2 = value.geometry.coordinates[0] * Math.PI/180;
+    const Δφ = (value.geometry.coordinates[0]-pointCoordinates[0]) * Math.PI/180;
+    const Δλ = (value.geometry.coordinates[1]-pointCoordinates[1]) * Math.PI/180;
+
+    const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+              Math.cos(φ1) * Math.cos(φ2) *
+              Math.sin(Δλ/2) * Math.sin(Δλ/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+    const d = R * c; // in metres
+      // console.log(element.geometry.coordinates);
+      // console.log(d);
+      // routeLengths.add([index, d]);
+      routeLengths[1].push(d);
+  } //)
+  ;
+
+  // console.log(routeLengths);
+  var arrayOfLenghts = routeLengths; // etäisyys bboxin sisällä olevista roskiksista
+  //var markersOfLenghts = Array.from(this.markersToDisplay);
+  var shortest = Math.min(...routeLengths[1]);
+  var indexOfShortest = arrayOfLenghts[1].findIndex(x => x == shortest);
+
+  // console.log(arrayOfLenghts);
+  // console.log(markersOfLenghts);
+  // console.log(shortest);
+  // console.log(indexOfShortest);
+  // console.log(arrayOfLenghts[1].findIndex(x => x == shortest));
+  // console.log(arrayOfLenghts[0][indexOfShortest]);
+
+  return arrayOfLenghts[0][indexOfShortest]
+}
+
   getNearestRoskis() {
 
-    // problem with offlinedata
-    // gives nearest to be 7km away
 
-    var routeLengths: Set<any> = new Set();
+
+    var routeLengths: any[] = []; //: Set<any> = new Set();
     var arrayOfMarkers = Array.from(this.markersToDisplay);
     // var arrayOfMarkers = Array.from(JSON.parse(localStorage.getItem('markers')));
 
@@ -903,16 +1026,20 @@ routeFunction(req) {
         // console.log(element.geometry.coordinates);
         // console.log(d);
         // routeLengths.add([index, d]);
-        routeLengths.add(d);
+        routeLengths.push(d);
     } //)
     ;
 
     // console.log(routeLengths);
-    var arrayOfLenghts = Array.from(routeLengths.values());
+    var arrayOfLenghts = routeLengths;
     var markersOfLenghts = Array.from(this.markersToDisplay);
-    var shortest = Math.min(...Array.from(routeLengths.values()));
+    var shortest = Math.min(...Array.from(routeLengths));
 
-
+    // console.log(arrayOfLenghts);
+    // console.log(markersOfLenghts);
+    // console.log(shortest);
+    // console.log(markersOfLenghts[arrayOfLenghts.findIndex(x => x == shortest)].geometry.coordinates);
+    // console.log(arrayOfLenghts.findIndex(x => x == shortest));
     //console.log(arrayOfLenghts.findIndex(x =>  Math.round(x) == Math.round(shortest)));
     // console.log(arrayOfLenghts.findIndex(x => x == shortest));
     // console.log(markersOfLenghts[arrayOfLenghts.findIndex(x => x == shortest)]);
@@ -925,18 +1052,23 @@ routeFunction(req) {
   }
 
   cameraMovement() {
+
     this.cameraRotate = !this.cameraRotate;
-    if (this.cameraRotate) this.rotateCamera(this.map.getBearing())
-    console.log(this.map.getBearing());
+    // console.log(this.map.getBearing());
+    // console.log(this.map.getPitch());
+    if (this.cameraRotate) this.rotateCamera(this.map.getBearing()*100)
+
     //this.rotateCamera(0);
   }
 
-  rotateCamera = (timestamp) => {
+  rotateCamera = (bearing) => {
+    if (this.cameraRotate) { requestAnimationFrame(this.rotateCamera)
+    //this.map.setPitch(60);
     // clamp the rotation between 0 -360 degrees
     // Divide timestamp by 100 to slow rotation to ~10 degrees / sec
-    this.map.rotateTo((timestamp / 100) % 360, { duration: 0 });
+    this.map.rotateTo((bearing / 100) % 360, { duration: 0  });
     // Request the next frame of the animation.
-    if (this.cameraRotate) requestAnimationFrame(this.rotateCamera);
+    }
   }
 
   inBoundingBox(bl/*bottom left*/: Coordinate, tr/*top right*/: Coordinate, p: Coordinate): Boolean {
@@ -947,8 +1079,11 @@ routeFunction(req) {
         p.lon >= bl.lon && p.lon <= tr.lon;
 
     return p.lat >= bl.lat  &&  p.lat <= tr.lat  &&  isLongInRange
-}
+  }
+
+  clickedBinCoords(markerIndex: any, coords: any, coordinates: any){
+    if (Array.from(markerIndex)[0]) { return coords;
+    } else { return coordinates;}
+  }
 
 }
-
-
