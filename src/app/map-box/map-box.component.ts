@@ -9,7 +9,6 @@ import { environment } from '../../environments/environment';
 import {OverlayModule} from '@angular/cdk/overlay';
 import { AngularFireList } from '@angular/fire/database';
 import Swal from 'sweetalert2';
-import { toInteger } from '@ng-bootstrap/ng-bootstrap/util/util';
 //import * as proj4 from "proj4";
 
 @Component({
@@ -41,6 +40,7 @@ export class MapBoxComponent implements OnInit{
 
 
   @ViewChild("animatedDigit") animatedDigit: ElementRef;
+  @ViewChild("mapdiv") mapdiv: ElementRef;
 
   offlineData: FeatureCollection;
   offlineMarkerData: any[] = [];
@@ -453,6 +453,14 @@ loadingTimed():void {
     stuff1[0].style.visibility = "hidden";
     stuff2[0].style.visibility = "hidden";
     stuff3[0].style.zIndex = '999';
+
+    const cursor = document.querySelector('.cursor');
+    cursor.setAttribute("style", "z-index:9999");
+
+    document.addEventListener('mousemove', e => {
+        cursor.setAttribute("style", "top: "+(e.pageY - 10)+"px; left: "+(e.pageX - 10)+"px;")
+    })
+
     this.animateCount();
     // this.rotateCamera(0);
   }
@@ -500,6 +508,22 @@ loadingTimed():void {
     //   console.log(newMarker)
     //   this.mapService.createMarker(newMarker)
     // })
+
+
+    this.map.on('mousedown', (e) => {
+      const routeBtn = document.createElement('div');
+
+      routeBtn.style.position= 'relative';
+      routeBtn.style.top= '50%';
+      routeBtn.style.left= '50%';
+      routeBtn.style.zIndex= '1000';
+
+      routeBtn.innerHTML = `<button class="btn btn-success btn-simple text-white">Get Route</button>`;
+
+      // this.mapdiv.nativeElement.innerHTML = `<button class="btn btn-success btn-simple text-white" >Get Route</button>`;
+      this.mapdiv.nativeElement.appendChild(routeBtn);
+    });
+
 
     //// Add Marker on Click -- ONCLICK GET ROUTE
     this.map.on('click', (event) => {
@@ -633,6 +657,8 @@ loadingTimed():void {
         //.setHTML(description)
         .addTo(this.map)
         .setDOMContent(divElement);
+
+
 
         //console.log(description);
         //console.log();
