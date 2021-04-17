@@ -1,4 +1,6 @@
 <!-- <input type="text" [(ngModel)]="message" placeholder="your message..."> -->
+
+<div class="cursor"></div>
 <div>
 
   <div  style="z-index: 11;position: absolute;display: flex;flex-direction: column-reverse;bottom: 1em;">
@@ -6,6 +8,10 @@
     <button class="btn btn-danger" (click)="getNearestRoskis()">Get Nearest Roskis</button>
     <button class="btn btn-secondary" (click)="flyToCurrentRoskis()">Fly To the Nearest Roskis</button>
     <button class="btn btn-info" (click)="cameraMovement()">Rotate Camera</button>
+  </div>
+
+  <div class="box">
+    <div #mapdiv ></div>
   </div>
 
 <div style="z-index: 10;" class="map" id="map">

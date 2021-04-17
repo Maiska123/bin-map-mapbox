@@ -13,6 +13,7 @@ export class DistanceComponent implements OnInit {
   @Input() steps: number;
   @ViewChild("animatedDigit") animatedDigit: ElementRef;
 
+  lastDigit: number;
     // counter animation
     @Input() distance: number;
     // digit: number;
@@ -22,6 +23,7 @@ export class DistanceComponent implements OnInit {
 
   ngOnInit() {
     if (this.digit) {
+      this.lastDigit = this.digit;
       this.animateCount();
     }
   }
@@ -35,6 +37,7 @@ export class DistanceComponent implements OnInit {
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes["digit"]) {
+      // this.lastDigit = this.digit;
       this.animateCount();
     }
     // console.log('from distance: '+ this.digit)
@@ -60,21 +63,38 @@ export class DistanceComponent implements OnInit {
     const valueIncrement = (endValue - 0) / stepCount;
     const sinValueIncrement = Math.PI / stepCount;
 
-    let currentValue = 0;
+    let currentValue = this.digit;
     let currentSinValue = 0;
 
-    function step() {
+    if (this.lastDigit < this.digit) {
+    function stepUp() {
       currentSinValue += sinValueIncrement;
       currentValue += valueIncrement * Math.sin(currentSinValue) ** 2 * 2;
 
       element.nativeElement.textContent = Math.abs(Math.floor(currentValue));
 
       if (currentSinValue < Math.PI) {
-        window.requestAnimationFrame(step);
+        window.requestAnimationFrame(stepUp);
       }
     }
+    stepUp();
+  } else {
+    function stepDown() {
+      currentSinValue += sinValueIncrement;
+      currentValue += valueIncrement * Math.sin(currentSinValue) ** 2 * 2;
 
-    step();
+      element.nativeElement.textContent = Math.abs(Math.floor(currentValue));
+
+      if (currentSinValue < Math.PI) {
+        window.requestAnimationFrame(stepDown);
+      }
+    }
+    stepDown();
+
+  }
+
+
+
   }
 
   genNumber = () => {
