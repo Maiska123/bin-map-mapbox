@@ -1,3 +1,4 @@
+import { DistanceComponent } from './map-box/distance/distance.component';
 import { environment } from './../environments/environment';
 import { MapService } from './map.service';
 import { BrowserModule } from '@angular/platform-browser';
@@ -18,7 +19,8 @@ import { OverlayModule } from "@angular/cdk/overlay";
   declarations: [
     AppComponent,
     MapBoxComponent,
-    HelloComponent
+    HelloComponent,
+    DistanceComponent
   ],
   imports: [
     BrowserModule,
