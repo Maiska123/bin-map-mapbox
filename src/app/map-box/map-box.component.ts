@@ -1,14 +1,15 @@
 import { Coordinate } from './../utils/interfaces';
 
 import { MapService } from './../map.service';
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, OnInit, Output, QueryList, SimpleChanges, ViewChild, ViewChildren } from '@angular/core';
 import * as mapboxgl from 'mapbox-gl';
 import { GeoJson, FeatureCollection } from '../map';
 import { Observable, pipe } from 'rxjs'
 import { environment } from '../../environments/environment';
 import {OverlayModule} from '@angular/cdk/overlay';
 import { AngularFireList } from '@angular/fire/database';
-import { Coordinate } from "../utils/interfaces";
+import Swal from 'sweetalert2';
+import { toInteger } from '@ng-bootstrap/ng-bootstrap/util/util';
 //import * as proj4 from "proj4";
 
 @Component({
@@ -21,7 +22,8 @@ export class MapBoxComponent implements OnInit{
 
   /// default settings
 
-
+  // lisää ominaisuus että reitti jonka varrelta poimii roskikset
+  // voisi esim- näyttää vain ne kun reitti-navigointi on päällä
 
   public map: mapboxgl.Map;
 
@@ -37,15 +39,19 @@ export class MapBoxComponent implements OnInit{
   roskisData: any[] = [];
   roskisCoordData: any[] = [];
 
+
+  @ViewChild("animatedDigit") animatedDigit: ElementRef;
+
   offlineData: FeatureCollection;
   offlineMarkerData: any[] = [];
 
-  distanceToRoskis: number;
+  distanceToRoskis: string;
   userLocations: any;
   routeData: any[] = [];
   routeDataSet: Set<any> = new Set();
   currentRoskis: any;
   //that = this.map;
+  distance: number;
 
   activity: any;
   activityName: string;
@@ -54,6 +60,7 @@ export class MapBoxComponent implements OnInit{
   activityDistance: number;
   gpx: any;
 
+  routeActivated: boolean = false;
 
   // data
   source: any;
@@ -93,8 +100,15 @@ export class MapBoxComponent implements OnInit{
 
   // Sama sisältö on katseltavissa kartat.tampere.fi -palvelun tai kansallisen paikkatietoikkunan kautta.
 
+  nums: Array<number> = [25, 76, 48];
 
-  constructor(private mapService: MapService) {
+  @ViewChild("oneItem") oneItem: any;
+  @ViewChildren("count") count: QueryList<any>;
+  @Output("digit") digit: number = 0;
+  @Output("duration") duration: number = 1000;
+
+  constructor(private mapService: MapService,
+              private elRef: ElementRef) {
   //   mapService.itemValue.subscribe((nextValue) => {
   //     alert(nextValue);  // this will happen on every change
   //     this.markers = this.mapService.getMarkers();
@@ -102,8 +116,98 @@ export class MapBoxComponent implements OnInit{
 
   // proj4.defs("SR-ORG:7787", "+proj=tmerc +lat_0=0 +lon_0=24 +k=1 +x_0=24500000 +y_0=0 +ellps=GRS80 +towgs84=0.0,0.0,0.0,0.0,0.0,0.0,0.0 +units=m +no_defs");
   // proj4.defs("SR-ORG:6864", "+proj=merc +lon_0=0 +k=1 +x_0=0 +y_0=0 +a=6378137 +b=6378137 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs");
-  }
 
+
+}
+
+
+// Via Promise
+backToUser = false;
+doAsyncTask() {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      if(!this.backToUser) {
+        reject('error');
+        return;
+      }
+
+      resolve('done');
+
+    }, 100);
+  });
+}
+
+
+loadingTimed():void {
+
+  Swal.queue([{
+    title: 'Getting Back To User',
+    didOpen: () => {
+          Swal.showLoading()
+    },
+    preConfirm: () => {
+      Swal.showLoading()
+      return this.doAsyncTask()
+        .then(data => Swal.insertQueueStep(data))
+        .catch(() => {
+          Swal.insertQueueStep({
+            icon: 'error',
+            title: 'Unable to get to your position'
+          })
+        }).finally( () =>
+            Swal.fire(
+              'Done!',
+              'We are back in business.',
+              'success'
+          ))
+    }
+  }])
+  // let ding
+  // Swal.fire({
+  //   title: 'Auto close alert!',
+  //   html: 'I will close in <b></b> milliseconds.',
+  //   //timer: 2000,
+  //   timerProgressBar: true,
+  //   didOpen: () => {
+  //     Swal.showLoading()
+  //     // ding = setInterval(() => {
+  //     //   const content = Swal.getContent()
+  //     //   if (content) {
+  //     //     const b: any = content.querySelector('b')
+  //     //     if (b) {
+  //     //       b.textContent = Swal.getTimerLeft()
+  //     //     }
+  //     //   }
+  //     // }, 100)
+  //   },preConfirm: (login) => {
+  //   return fetch(`//api.github.com/users/${login}`)
+  //     .then(response => {
+  //       if (!response.ok) {
+  //         throw new Error(response.statusText)
+  //       }
+  //       return response.json()
+  //     })
+  //     .catch(error => {
+  //       console.error(error);
+  //     })
+  // },
+  // allowOutsideClick: () => !Swal.isLoading()
+  //   // ,
+  //   // willClose: () => {
+  //   //   clearInterval(ding)
+  //   // }
+  // }).then((result) => {
+  //   /* Read more about handling dismissals below */
+  //   if (result.dismiss === Swal.DismissReason.timer) {
+  //     console.log('I was closed by the timer')
+  //   }
+  //   if (result.dismiss === Swal.DismissReason.close) {
+  //     console.log('I was closed by the close')
+  //   }
+
+  // })
+
+}
   // universal style getJson
   getJSON = (url, callback) => {
     var xhr = new XMLHttpRequest();
@@ -133,69 +237,70 @@ export class MapBoxComponent implements OnInit{
     this.initializeMap()
 
     // to get data from URL as JSON
-//     this.getJSON(this.roskisUrl,
-//     (err, data) => {
-//       if (err !== null) {
-//         console.log('Something went wrong: ' + err);
-//       } else {
-//         console.log(data);
-//         console.log('raw data: ' + data.features[0].geometry.coordinates);
-//         console.log('raw data: ' + data.features[0].properties.TARKENNE);
+    // this.getJSON(this.roskisUrl,
+    // (err, data) => {
+    //   if (err !== null) {
+    //     console.log('Something went wrong: ' + err);
+    //   } else {
+    //     console.log(data);
+    //     console.log('raw data: ' + data.features[0].geometry.coordinates);
+    //     console.log('raw data: ' + data.features[0].properties.TARKENNE);
 
-//                   //Initialization of object to save
-//           var objectToSave= data.features ;//{first:'string', second: function(){}};
-//           //Start of saving method
-//           var textToSave='';//String to be saved
-//           var count=0;
-//           var tempData = {
-//             id: 0,
-//             coords: [],
-//             desc: ''
-//           };
-//           var kuvaus: string;
-//           for(var i in objectToSave){
-//             var tempData = {
-//               id: 0,
-//               coords: [],
-//               desc: ''
-//             };
-//            kuvaus = data.features[count].properties.TARKENNE != null ? data.features[count].properties.TARKENNE : data.features[count].properties.TYYPPI;
-
-
-
-//             //for ( var index in data ) {
-//               //if ( data[index].Status == "Valid" ) {
-//                 tempData.coords = data.features[count].geometry.coordinates;
-//                 tempData.desc = kuvaus;
-//                 tempData.id = count;
-//                 this.roskisData.push(tempData);
-
-//               //}
-//             //}
-//             //data = tempData;
-//           //Adding every key name + type + text value to string
-
-//           textToSave+=data.features[count].geometry.coordinates + '\n';//objectToSave[i].constructor.name+' '+ Object.keys(objectToSave)[count]+' = '+objectToSave[i]+'\n';
-
-//           //textToSave+=objectToSave[i].constructor.name+' '+ Object.keys(objectToSave)[count]+' = '+objectToSave[i]+'\n';
-//           count++;
-//           }
-
-//           //Saving string to file using html clicking trick
-//           var hiddenElement = document.createElement('a');
-//           hiddenElement.href = 'data:attachment/text,' + encodeURI(textToSave);
-//           hiddenElement.target = '_blank';
-//           hiddenElement.download = 'myFile.txt';
-//          // hiddenElement.click();
-//          //console.log(this.roskisData);
-//          //console.log(tempData);
+    //               //Initialization of object to save
+    //       var objectToSave= data.features ;//{first:'string', second: function(){}};
+    //       //Start of saving method
+    //       var textToSave='';//String to be saved
+    //       var count=0;
+    //       var tempData = {
+    //         id: 0,
+    //         coords: [],
+    //         desc: ''
+    //       };
+    //       var kuvaus: string;
+    //       for(var i in objectToSave){
+    //         var tempData = {
+    //           id: 0,
+    //           coords: [],
+    //           desc: ''
+    //         };
+    //        kuvaus = data.features[count].properties.TARKENNE != null ? data.features[count].properties.TARKENNE : data.features[count].properties.TYYPPI;
 
 
-//   //         fetch('http://localhost/coords.txt')
-//   // .then(response => response.text())
-//   // .then((data) => {
-//   //   console.log(data)
-//   // })
+
+    //         for ( var index in data ) {
+    //           //if ( data[index].Status == "Valid" ) {
+    //             tempData.coords = data.features[count].geometry.coordinates;
+    //             tempData.desc = kuvaus;
+    //             tempData.id = count;
+    //             this.roskisData.push(tempData);
+
+    //           //}
+    //         //}
+    //         //data = tempData;
+    //       //Adding every key name + type + text value to string
+
+    //       textToSave+=data.features[count].geometry.coordinates + '\n';//objectToSave[i].constructor.name+' '+ Object.keys(objectToSave)[count]+' = '+objectToSave[i]+'\n';
+
+    //       //textToSave+=objectToSave[i].constructor.name+' '+ Object.keys(objectToSave)[count]+' = '+objectToSave[i]+'\n';
+    //       count++;
+    //       }
+    // var datatLocaalista: string = localStorage.getItem('markers');
+
+          //Saving string to file using html clicking trick
+          // var hiddenElement = document.createElement('a');
+          // hiddenElement.href = 'data:attachment/text,' + encodeURI(datatLocaalista);
+          // hiddenElement.target = '_blank';
+          // hiddenElement.download = 'myFile.txt';
+          // hiddenElement.click();
+         //console.log(this.roskisData);
+         //console.log(tempData);
+
+
+  //         fetch('http://localhost/coords.txt')
+  // .then(response => response.text())
+  // .then((data) => {
+  //   console.log(data)
+  // })
 
 // //   document.getElementById('inputfile')
 // //   .addEventListener('change', function() {
@@ -304,8 +409,36 @@ export class MapBoxComponent implements OnInit{
     console.log(set);
   }
 
-  ngAfterViewInit(): void {
 
+  animateCount() {
+    let _this = this;
+
+    let single = this.oneItem.nativeElement.innerHTML;
+
+    this.counterFunc(single, this.oneItem, 7000);
+
+    this.count.forEach(item => {
+      _this.counterFunc(item.nativeElement.innerHTML, item, 2000);
+    });
+  }
+
+  counterFunc(end: number, element: any, duration: number) {
+    let range, current: number, step, timer;
+
+    range = end - 0;
+    current = 0;
+    step = Math.abs(Math.floor(duration / range));
+
+    timer = setInterval(() => {
+      current += 1;
+      element.nativeElement.textContent = current;
+      if (current == end) {
+        clearInterval(timer);
+      }
+    }, step);
+  }
+
+  ngAfterViewInit(): void {
 
     //Called after ngAfterContentInit when the component's view has been initialized. Applies to components only.
     //Add 'implements AfterViewInit' to the class.
@@ -314,11 +447,13 @@ export class MapBoxComponent implements OnInit{
 // class="mapboxgl-ctrl-bottom-left"
     var stuff1 = Array.from(document.getElementsByClassName('mapboxgl-ctrl-bottom-right') as HTMLCollectionOf<HTMLElement>);
     var stuff2 = Array.from(document.getElementsByClassName('mapboxgl-ctrl-bottom-left') as HTMLCollectionOf<HTMLElement>);
+    var stuff3 = Array.from(document.getElementsByClassName('mapboxgl-ctrl-top-right') as HTMLCollectionOf<HTMLElement>);
 
 
     stuff1[0].style.visibility = "hidden";
     stuff2[0].style.visibility = "hidden";
-
+    stuff3[0].style.zIndex = '999';
+    this.animateCount();
     // this.rotateCamera(0);
   }
 
@@ -347,7 +482,7 @@ export class MapBoxComponent implements OnInit{
       style: this.style,
       zoom: 16,
       maxZoom: 19,
-      minZoom: 10,
+      minZoom: 14,
       minPitch: 0,
       maxPitch: 67,
       center: [this.lng, this.lat]
@@ -731,8 +866,77 @@ export class MapBoxComponent implements OnInit{
     this.flyToCoords([rep.coords.longitude,rep.coords.latitude])
   }
 
+  waitForOneSecond(distance: number) {
+    return new Promise(resolve => {
+      setTimeout(() => {
+
+        resolve("I promise to return after one second!");
+        //this.flyToUser();
+      }, 10);
+    });
+  }
+
+
+  rotateUser(){
+    this.map.rotateTo(0, { duration: 500  })
+  }
+
+confirmTimeout(){
+
+  if (this.map.isMoving()) {
+    this.waitForOneSecond(100)
+    .then(() => {
+      this.confirmTimeout();
+    })
+  } else {
+    this.rotateUser();
+    this.backToUser = true;
+    Swal.clickConfirm();
+  }
+
+}
+
   flyToUser() {
-    this.cameraRotate = !this.cameraRotate;
+    this.backToUser = false;
+
+    this.loadingTimed();
+
+    // console.log(this.map.getCenter())
+    // console.log(this.map.getZoom())
+    // console.log(this.map.getMaxZoom())
+    // console.log(this.map.getMinZoom())
+    // console.log('nyt painettiin');
+    // console.time('sekunti');
+
+    // var new_york = this.map.getCenter();
+    // var los_angeles = new mapboxgl.LngLat(this.lng, this.lat);
+    // console.log(new_york.distanceTo(los_angeles));
+
+    // = 3935751.690893987, "true distance" using a non-spherical approximation is ~3966km
+
+
+    this.waitForOneSecond(100)
+    .then(() => {
+      this.map.flyTo({
+        center: [this.lng, this.lat],
+        zoom: 17
+      })
+    })
+    .finally(() => {
+      this.confirmTimeout();
+
+      // console.log(this.map.isMoving());
+    });
+
+    this.cameraRotate = false;
+
+    // ota nykyne rotatioaxis
+    // käske animaation lailla pyörähtämään 0
+    //requestAnimationFrame(this.rotateCamera)
+
+
+
+
     var start: any[] = [];
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(position => {
@@ -773,10 +977,10 @@ export class MapBoxComponent implements OnInit{
 
 
 
-      this.map.flyTo({
-        center: [this.lng, this.lat],
-        zoom: 17
-      })
+      // this.map.flyTo({
+      //   center: [this.lng, this.lat],
+      //   zoom: 17
+      // })
     });
 
     }
@@ -868,7 +1072,9 @@ export class MapBoxComponent implements OnInit{
   this.currentDestination = end;
 }
 
+
 routeFunction(req) {
+
   //console.log(this.map);
   //console.log(this.map);
   var json = JSON.parse(req.response);
@@ -881,16 +1087,26 @@ routeFunction(req) {
     localStorage.setItem("routeData", JSON.stringify(this.routeData));
   }
 
-
-
-
-
+  this.routeActivated = true;
 
   var data = json.routes[0];
   // data.distance: 926.09
   // console.log(Math.ceil(Math.round(data.distance)/5)*5);
   // Math.ceil(Math.round(data.distance)/5)*5: 930
-  this.distanceToRoskis = Math.ceil(Math.round(data.distance)/5)*5;
+
+  this.distance = Math.ceil(Math.round(data.distance)/5)*5;
+
+  this.distanceToRoskis = this.distance.toString();
+
+  if (this.distance > 2500) {
+    // console.log(this.distanceToRoskis);
+
+    this.distanceToRoskis = (((data.distance/1000))).toFixed(2);
+    // console.log(this.distanceToRoskis);
+  }
+
+  this.digit = Math.round(Number.parseInt(this.distanceToRoskis));
+
   var route = data.geometry.coordinates;
   var geojson = {
     type: 'Feature',
@@ -932,7 +1148,7 @@ routeFunction(req) {
   }
   // add turn instructions here at the end
 
-  }
+}
 
 
   // find these and hide

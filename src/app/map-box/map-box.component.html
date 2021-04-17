@@ -15,8 +15,8 @@
 </div>
 
 </div>
-<div class="heading">
-  <h1 class="h1" id="h1" style="color: aliceblue;">Distance To Roskis: {{distanceToRoskis}}m</h1>
+<div class="heading" ><!-- *ngIf="distanceToRoskis > 6" -->
+  <app-distance [distance]="distance" [digit]="digit" [duration]="duration"></app-distance>
 </div>
 
 
