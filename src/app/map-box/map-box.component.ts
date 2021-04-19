@@ -1,7 +1,7 @@
 import { Coordinate } from './../utils/interfaces';
 
 import { MapService } from './../map.service';
-import { Component, ElementRef, OnInit, Output, QueryList, SimpleChanges, ViewChild, ViewChildren } from '@angular/core';
+import { Component, ElementRef, Input, OnInit, Output, QueryList, SimpleChanges, ViewChild, ViewChildren } from '@angular/core';
 import * as mapboxgl from 'mapbox-gl';
 import { GeoJson, FeatureCollection } from '../map';
 import { Observable, pipe } from 'rxjs'
@@ -9,6 +9,8 @@ import { environment } from '../../environments/environment';
 import {OverlayModule} from '@angular/cdk/overlay';
 import { AngularFireList } from '@angular/fire/database';
 import Swal from 'sweetalert2';
+import { MatSidenav } from '@angular/material/sidenav';
+import { FormControl } from '@angular/forms';
 //import * as proj4 from "proj4";
 
 @Component({
@@ -23,8 +25,12 @@ export class MapBoxComponent implements OnInit{
 
   // lisää ominaisuus että reitti jonka varrelta poimii roskikset
   // voisi esim- näyttää vain ne kun reitti-navigointi on päällä
-
+  @ViewChild('sidenav') sidenav: MatSidenav;
+  @ViewChild('sidenav1') sidenav1: MatSidenav;
+  // @Input() checked: boolean;
+  // @ViewChild('sidenav') public sidenav: MdSidenav;
   public map: mapboxgl.Map;
+  toogle = new FormControl('', []);
 
   style = 'mapbox://styles/maiska/ckn5ni6gd0q1a17oykioohezf/draft';
   lat = 61.498643;
@@ -37,7 +43,7 @@ export class MapBoxComponent implements OnInit{
   cameraRotate: boolean = false;
   roskisData: any[] = [];
   roskisCoordData: any[] = [];
-
+  @Output('destination') destination: string = '';
 
   @ViewChild("animatedDigit") animatedDigit: ElementRef;
   @ViewChild("mapdiv") mapdiv: ElementRef;
@@ -67,12 +73,17 @@ export class MapBoxComponent implements OnInit{
   markers: AngularFireList<any>;
   markersToDisplay: Set<any> = new Set();
 
+  flyToNearestBin: boolean = true;
+  flyToBinChecked: boolean = true;
+  flyToBinButtonDisabled: boolean = false;
+  waypoints: string[] = [];
   // const overlayRef = overlay.create();
   // const userProfilePortal = new ComponentPortal(UserProfile);
   // overlayRef.attach(userProfilePortal);
 
   isOpen = true;
-
+  burgermenu1: any;
+  burgermenu2: any;
 
   roskisUrl = 'https://geodata.tampere.fi/geoserver/maankaytto/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=maankaytto:WFS_ROSKIS&outputFormat=json'
 
@@ -106,6 +117,10 @@ export class MapBoxComponent implements OnInit{
   @ViewChildren("count") count: QueryList<any>;
   @Output("digit") digit: number = 0;
   @Output("duration") duration: number = 1000;
+  @Output("hideDistance") hideDistance: boolean = true;
+  @Output("burgertime") burgertime: boolean = true;
+  @Output("burgertime2") burgertime2: boolean = true;
+  clicked: any;
 
   constructor(private mapService: MapService,
               private elRef: ElementRef) {
@@ -120,6 +135,48 @@ export class MapBoxComponent implements OnInit{
 
 }
 
+sidenavClose(){
+  this.sidenav.toggle();
+  // this.sidenav.close();
+    // this.burgertime = !this.burgertime;
+
+}
+
+sidenavClose2(){
+  this.sidenav1.toggle();
+
+  // this.sidenav.close();
+    // this.burgertime = !this.burgertime;
+
+}
+
+burgerTime() {
+  // visibility: visible !important;
+
+  // this.burgertime = !this.burgertime;
+
+  // if (!this.burgertime2){
+  //   this.burgermenu1[0].style.transform = 'translateX(0px)';
+  // } else if (this.burgertime2)
+  // {this.burgermenu1[0].style.transform = 'translateX(100px)'}
+
+  this.sidenav.toggle();
+
+}
+
+burgerTime2() {
+
+  // if (!this.burgertime){
+  //   this.burgermenu2[0].style.transform = 'translateX(0px)';
+  // } else if (!this.burgertime)
+  // {this.burgermenu2[0].style.transform = 'translateX(100px)'}
+
+  // if (this.burgermenu1[0].style.visibility == 'hidden'){
+  //   this.burgermenu1[0].style.visibility = 'visible'
+  // } else {this.burgermenu1[0].style.visibility = 'hidden'}
+  // this.burgertime = !this.burgertime;
+  this.sidenav1.toggle();
+}
 
 // Via Promise
 backToUser = false;
@@ -228,6 +285,11 @@ loadingTimed():void {
 
   ngOnInit() {
     // Get markers from mapService
+
+      // console.log("toogleValue", this.flyToBinChecked);
+      // this.flyToBinChecked = !this.flyToBinChecked
+      // ;
+
 
     this.mapService.getLocation().subscribe(rep => {
       // do something with Rep, Rep will have the data you desire.
@@ -440,26 +502,49 @@ loadingTimed():void {
 
   ngAfterViewInit(): void {
 
+    this.burgermenu1 = Array.from(document.getElementsByClassName('burgermenu1') as HTMLCollectionOf<HTMLElement>);
+    this.burgermenu2 = Array.from(document.getElementsByClassName('burgermenu2') as HTMLCollectionOf<HTMLElement>);
+
+    this.sidenav.openedChange.subscribe(() => {this.burgertime = !this.burgertime,
+      !this.burgertime ? (this.burgermenu2[0].style.transform = 'translateX(-100px)', this.burgermenu1[0].style.zIndex = '100') : (this.burgermenu2[0].style.transform = 'translateX(0px)',this.burgermenu1[0].style.zIndex = '2')});
+    this.sidenav1.openedChange.subscribe(() => {this.burgertime2 = !this.burgertime2,
+      !this.burgertime2 ? (this.burgermenu1[0].style.transform = 'translateX(-100px)', this.burgermenu2[0].style.zIndex = '100') : (this.burgermenu1[0].style.transform = 'translateX(0px)',this.burgermenu2[0].style.zIndex = '2')});
+
+
     //Called after ngAfterContentInit when the component's view has been initialized. Applies to components only.
     //Add 'implements AfterViewInit' to the class.
     // find these and hide
 // class="mapboxgl-ctrl mapboxgl-ctrl-attrib"
 // class="mapboxgl-ctrl-bottom-left"
+
     var stuff1 = Array.from(document.getElementsByClassName('mapboxgl-ctrl-bottom-right') as HTMLCollectionOf<HTMLElement>);
     var stuff2 = Array.from(document.getElementsByClassName('mapboxgl-ctrl-bottom-left') as HTMLCollectionOf<HTMLElement>);
     var stuff3 = Array.from(document.getElementsByClassName('mapboxgl-ctrl-top-right') as HTMLCollectionOf<HTMLElement>);
+    var stuff4 = Array.from(document.getElementsByClassName('mat-drawer-inner-container') as HTMLCollectionOf<HTMLElement>);
+ // var stuff5 = document.getElementById('hamburger');
 
+    // .hamburglar {
+    //   margin:10px 40px 10px 25px !important;
+    // }
 
     stuff1[0].style.visibility = "hidden";
     stuff2[0].style.visibility = "hidden";
+    stuff4[0].style.overflow = "visible";
     stuff3[0].style.zIndex = '999';
+    stuff3[0].style.transform = 'scale(1.5) translate(-10px, 20px)';
+    // stuff2[0].style.visibility = "hidden";
 
-    const cursor = document.querySelector('.cursor');
-    cursor.setAttribute("style", "z-index:9999");
+    // stuff5[0].style.margin = '10px 40px 10px 25px !important';
 
-    document.addEventListener('mousemove', e => {
-        cursor.setAttribute("style", "top: "+(e.pageY - 10)+"px; left: "+(e.pageX - 10)+"px;")
-    })
+
+    // const cursor = document.querySelector('.cursor');
+    // // cursor.setAttribute("style", "z-index:9999");
+
+    // document.addEventListener('mousemove', e => {
+    //   if (!this.clicked) cursor.setAttribute("style", "top: "+(e.pageY-15 )+"px; left: "+(e.pageX -15)+"px;");
+    // })
+
+
 
     this.animateCount();
     // this.rotateCamera(0);
@@ -511,14 +596,17 @@ loadingTimed():void {
 
 
     this.map.on('mousedown', (e) => {
+
+      //this.clicked = !this.clicked;
+
       const routeBtn = document.createElement('div');
 
-      routeBtn.style.position= 'relative';
+      routeBtn.style.position= 'fixed';
       routeBtn.style.top= '50%';
       routeBtn.style.left= '50%';
       routeBtn.style.zIndex= '1000';
 
-      routeBtn.innerHTML = `<button class="btn btn-success btn-simple text-white">Get Route</button>`;
+      routeBtn.innerHTML = `<button class="btn btn-success btn-simple text-white">I am a Button</button>`;
 
       // this.mapdiv.nativeElement.innerHTML = `<button class="btn btn-success btn-simple text-white" >Get Route</button>`;
       this.mapdiv.nativeElement.appendChild(routeBtn);
@@ -545,9 +633,6 @@ loadingTimed():void {
         // );
 
         //map.setFilter('counties-highlighted', filter);
-
-
-
 
       const coordinates = [event.lngLat.lng, event.lngLat.lat]
       const newMarker   = new GeoJson(coordinates, { message: this.message })
@@ -609,17 +694,25 @@ loadingTimed():void {
       const routeBtn = document.createElement('div');
       const markerNewBtn = document.createElement('div');
       const assignBtn = document.createElement('div');
+      const addToWaypoints = document.createElement('div');
       var coords: any;
 
+      addToWaypoints.innerHTML = `<button class="btn btn-success btn-simple text-white" >Add a Waypoint</button>`;
       routeBtn.innerHTML = `<button class="btn btn-success btn-simple text-white" >Get Route</button>`;
       markerNewBtn.innerHTML = `<button class="btn btn-success btn-simple text-white" >New Marker</button>`;
 
       if (Array.from(markerIndex)[0]) {
+
+
         var nearestPointIndex = this.getNearestPoint(Array.from(markerIndex),coordinates);
         coords = this.offlineMarkerData[nearestPointIndex].geometry.coordinates;
       assignBtn.innerHTML = `<button class="btn btn-primary" (click)="flyToCoords(coords)">${ this.offlineMarkerData[Array.from(markerIndex)[0]].properties.message } : ${nearestPointIndex}</button>`;
-      this.flyToCoords(coords);
+
+
+      if (this.flyToBinChecked){
+        this.flyToCoords(coords);
       }
+    } /*else {this.clicked = !this.clicked}*/
 
       // markerIndex.forEach(index => {
       //   console.log(index);
@@ -639,7 +732,7 @@ loadingTimed():void {
 
       divElement.innerHTML = innerHtmlContent;
       divElement.appendChild(routeBtn);
-
+      divElement.appendChild(addToWaypoints);
       divElement.appendChild(assignBtn);
 
       // btn.className = 'btn';
@@ -653,15 +746,16 @@ loadingTimed():void {
 
 
       var popup = new mapboxgl.Popup()
-        .setLngLat(this.clickedBinCoords(markerIndex, coords, coordinates)) // eslint-disable-line no-use-before-define
+        .setLngLat((this.flyToBinChecked ? this.clickedBinCoords(markerIndex, coords, coordinates) : coordinates)) // eslint-disable-line no-use-before-define
         //.setHTML(description)
         .addTo(this.map)
         .setDOMContent(divElement);
 
-
-
         //console.log(description);
         //console.log();
+
+        this.clicked = true;
+        // addEventListener
 
         if (!Array.from(markerIndex)[0]) {
 
@@ -671,20 +765,38 @@ loadingTimed():void {
             console.log('Button clicked' + name);
             this.mapService.createMarker(newMarker)
             popup.remove();
+            this.clicked = false;
           });
         }
+
+        addToWaypoints.addEventListener('click', (e) => {
+          // console.log('Button clicked' + name);
+          this.waypoints.push(coordinates.toString());
+          console.log(this.waypoints)
+          popup.remove();
+          this.clicked = false;
+        });
+
 
       routeBtn.addEventListener('click', (e) => {
         // console.log('Button clicked' + name);
         this.getRoute(coordinates);
         popup.remove();
+        this.clicked = false;
       });
 
       assignBtn.addEventListener('click', (e) => {
         // console.log('Button clicked' + name);
         this.flyToCoords(coords);
         popup.remove();
+        this.clicked = false;
       });
+
+      var closebtn = document.getElementsByClassName('mapboxgl-popup-close-button');
+      closebtn[0].setAttribute('style', 'transform: scale(3);')
+      closebtn[0].addEventListener('click', (e) => {
+        this.clicked = false;
+      })
 
 
       //this.getRoute(coordinates);// mapService.createMarker(newMarker)
@@ -907,23 +1019,133 @@ loadingTimed():void {
     this.map.rotateTo(0, { duration: 500  })
   }
 
-confirmTimeout(){
-
-  if (this.map.isMoving()) {
-    this.waitForOneSecond(100)
-    .then(() => {
-      this.confirmTimeout();
-    })
-  } else {
-    this.rotateUser();
-    this.backToUser = true;
-    Swal.clickConfirm();
+  flyToBinToggle(){
+    this.flyToBinChecked = !this.flyToBinChecked;
   }
 
+  hideDistanceToggle(){
+    this.hideDistance = !this.hideDistance;
+  }
+
+  getToWaypoint(i:number){
+    var waypointArray: string[] = this.waypoints[i].split(',');
+
+  var waypointNumber = [Number.parseFloat(waypointArray[0]),Number.parseFloat(waypointArray[1])];
+    this.flyToCoords(waypointNumber);
+  }
+
+  deleteWaypoint(i: number){
+    this.waypoints.splice(i,1);
+  }
+
+
+  confirmTimeout(){
+
+    if (this.map.isMoving()) {
+      this.waitForOneSecond(100)
+      .then(() => {
+        this.confirmTimeout();
+      })
+    } else {
+      this.rotateUser();
+      this.backToUser = true;
+      Swal.clickConfirm();
+    }
+
+  }
+
+  applyWaypoints(){
+    this.directionsWithWaypoints();
+    console.log('Route with waypoints queried');
+  }
+
+  // directions with waypoints (start; waypoint; end;)
+  directionsWithWaypoints(){
+    this.destination = 'Destination';
+  // make a directions request using walking profile
+  // an arbitrary start will always be the same
+  // only the end or destination will change
+
+  // Get Current Location Data
+  navigator.geolocation.getCurrentPosition(position => {
+    this.lat = position.coords.latitude;
+    this.lng = position.coords.longitude;
+  });
+
+  // Its going to be the starting point
+  var start = [this.lng, this.lat];
+
+  // end is the latest waypoint
+
+  var endString: string[] = this.waypoints[this.waypoints.length-1].split(',');
+
+  var end = [Number.parseFloat(endString[0]),Number.parseFloat(endString[1])];
+  console.log(end);
+  // everything in between is gradually added after start but before end
+  // on display it should show waypoints with numbers of order
+  var waypointsToUrl: string = '';
+
+  if ((this.waypoints.length) > 0) {
+
+  this.waypoints.forEach((value,index) => {
+    waypointsToUrl += (value +';');
+  });
+
+  console.log(waypointsToUrl);
+
+    this.currentPosition = start;
+
+    var url = 'https://api.mapbox.com/directions/v5/mapbox/walking/' + start[0] + ',' + start[1] + ';'+ waypointsToUrl + end[0] + ',' + end[1] + '?steps=true&geometries=geojson&access_token=' + environment.mapbox.accessToken;
+    //var bool: Observable<boolean>;
+
+    // if one would use mapbox directions api
+  //   let directions = new MapboxDirections({
+  //     accessToken: mapboxgl.accessToken,
+  //     unit: 'metric',
+  //     profile: 'mapbox/driving',
+  //     interactive: false,
+  //     controls: false
+  // });
+
+    // make an XHR request https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest
+    var req = new XMLHttpRequest();
+    req.open('GET', url, true);
+    req.onload = () => {
+      //console.log(req)
+      //test(req)
+      this.routeFunction(req);
+      //bool.
+      // Do something with the retrieved data ( found in xmlhttp.response )
+    };
+    req.send();
+
+    this.latestReq = req;
+
+  }
+  else { this.routeFunction(this.latestReq); }
+  this.currentDestination = end;
+
+//   this.map.on('load', function() {
+//     directions.setOrigin([-117.1425, 32.63638889]);
+//     directions.addWaypoint(0, [-117.1425, 32.63638889]);
+//     directions.addWaypoint(1, [-117.195, 32.75416667]);
+//     ---
+//     ---
+//     directions.addWaypoint(23, [-116.5012667, 32.92583333]);
+//     directions.setDestination([-116.5616667, 32.93583333]);
+// })
+// this.map.addControl(directions, 'top-left');
 }
+
 
   flyToUser() {
     this.backToUser = false;
+
+    // this.sidenav.toggle();
+
+    // this.sidenav.toggle().then(()=>{
+    //   this.loadingTimed();
+    // });
 
     this.loadingTimed();
 
@@ -1021,7 +1243,7 @@ confirmTimeout(){
   // an arbitrary start will always be the same
   // only the end or destination will change
   this.currentRoskis = end;
-  if (localStorage.getItem("routeData")  !== null ) var obj = (localStorage.getItem("routeData"));
+  // if (localStorage.getItem("routeData")  !== null ) var obj = (localStorage.getItem("routeData"));
 
 
   // console.log(obj);
@@ -1078,6 +1300,14 @@ confirmTimeout(){
     var url = 'https://api.mapbox.com/directions/v5/mapbox/walking/' + start[0] + ',' + start[1] + ';' + end[0] + ',' + end[1] + '?steps=true&geometries=geojson&access_token=' + environment.mapbox.accessToken;
     //var bool: Observable<boolean>;
 
+    // if one would use mapbox directions api
+  //   let directions = new MapboxDirections({
+  //     accessToken: mapboxgl.accessToken,
+  //     unit: 'metric',
+  //     profile: 'mapbox/driving',
+  //     interactive: false,
+  //     controls: false
+  // });
 
     // make an XHR request https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest
     var req = new XMLHttpRequest();
@@ -1096,6 +1326,7 @@ confirmTimeout(){
   }
   else { this.routeFunction(this.latestReq); }
   this.currentDestination = end;
+  this.destination = 'Roskis';
 }
 
 

@@ -1,14 +1,129 @@
 <!-- <input type="text" [(ngModel)]="message" placeholder="your message..."> -->
 
-<div class="cursor"></div>
+
+
+
+<mat-sidenav-container [hasBackdrop]="false" style="z-index: 1050;  position: absolute;
+top: 0;
+bottom: 0;
+left: 0;
+right: 0;">
+
+  <mat-sidenav #sidenav style="    background: black;">
+    <div class="container">
+      <div style="padding-top: 10px; padding-right: 20px;display: inline-block;">
+        <ol style="list-style: none;">
+          <mat-slide-toggle color="accent" style="color:green" style="transform: scale(2); margin-left: 74px;" (toggleChange)="flyToBinToggle()" [checked] = "flyToBinChecked"
+          [disabled] = "flyToBinButtonDisabled"></mat-slide-toggle>
+          <li class="menu-item" style="color: white;">
+            Go To Nearest Bin On Click
+           </li>
+           <mat-slide-toggle color="accent" style="color:green" style="transform: scale(2); margin-left: 74px;margin-top:10px" (toggleChange)="hideDistanceToggle()" [checked] = "!hideDistance"
+          ></mat-slide-toggle>
+          <li class="menu-item" style="color: white;">
+            Show Distance Calculation
+           </li>
+          <li class="menu-item">
+            <button class="btn btn-danger" (click)="getNearestRoskis()">Get Nearest Roskis</button>
+          </li>
+          <li class="menu-item">
+            <button class="btn btn-warning" (click)="flyToUser()">Back To User</button>
+          </li>
+          <li class="menu-item">
+            <button class="btn btn-secondary" (click)="flyToCurrentRoskis()">Fly To the Nearest Roskis</button>
+          </li>
+          <li class="menu-item">
+            <button class="btn btn-info" (click)="cameraMovement()">Rotate Camera</button>
+          </li>
+          <li class="menu-item">
+            <button class="btn btn-success" (click)="applyWaypoints()">Get Route With Waypoints</button>
+          </li>
+        </ol>
+      </div>
+
+      <div class="outer-point">
+        <app-hamburger-menu class="burgermenu1" (click)="burgerTime()"  [isClosed]="burgertime" style="flex: auto;display: inline-block;"></app-hamburger-menu>
+      </div>
+
+
+    </div>
+
+
+
+  </mat-sidenav>
+
+  <mat-sidenav #sidenav1 mode="side" position="start" role="navigation" class="sidenav-wv" style="
+  position: fixed;
+  visibility: visible;
+  top: 24vh;    background: black;">
+    this is parent menu
+    <div class="container">
+      <div style="padding-top: 10px; padding-right: 20px;display: inline-block;">
+        <ol style="list-style: none;">
+          <li class="menu-item">
+            <button class="btn btn-warning" (click)="flyToUser()">Back To User</button>
+          </li>
+          <li class="menu-item" *ngFor="let waypoint of waypoints; index as i">
+            <button style="max-width: 60px;;" class="btn btn-success" (click)="getToWaypoint(i)">Get To waypoint</button>
+            <button style="max-width: 60px;;" class="btn btn-danger" (click)="deleteWaypoint(i)">Delete Waypoint</button>
+          </li>
+          <!-- <li class="menu-item">
+            <button class="btn btn-warning" (click)="flyToUser()">Back To User</button>
+          </li>
+          <li class="menu-item">
+            <button class="btn btn-secondary" (click)="flyToCurrentRoskis()">Fly To the Nearest Roskis</button>
+          </li>
+          <li class="menu-item">
+            <button class="btn btn-info" (click)="cameraMovement()">Rotate Camera</button>
+          </li>
+          <li class="menu-item">
+            <button class="btn btn-success" (click)="applyWaypoints()">Get Route With Waypoints</button>
+          </li> -->
+        </ol>
+      </div>
+
+      <div class="outer-point2">
+        <app-drawing-menu class="burgermenu2" (click)="burgerTime2()"  [isClosed]="burgertime2" style="flex: auto;display: inline-block;"></app-drawing-menu>
+      </div>
+<!--
+      <div class="outer-point2">
+        <app-hamburger-menu class="burgermenu2" (click)="burgerTime2()"  [isClosed]="burgertime2" style="flex: auto;display: inline-block;"></app-hamburger-menu>
+      </div> -->
+
+
+    </div>
+  </mat-sidenav>
+
+  <mat-sidenav-content>
+
+
+
+    <!-- The circle that follows mousepointer -->
+<!-- <div class="cursor"></div> -->
+
 <div>
 
-  <div  style="z-index: 11;position: absolute;display: flex;flex-direction: column-reverse;bottom: 1em;">
-    <button class="btn btn-warning" (click)="flyToUser()">Back To User</button>
-    <button class="btn btn-danger" (click)="getNearestRoskis()">Get Nearest Roskis</button>
-    <button class="btn btn-secondary" (click)="flyToCurrentRoskis()">Fly To the Nearest Roskis</button>
-    <button class="btn btn-info" (click)="cameraMovement()">Rotate Camera</button>
-  </div>
+<!-- buttons -->
+  <!-- <div  style="z-index: 11;position: absolute;display: flex;flex-direction: column-reverse;bottom: 1em;">
+
+
+    <nav class="menu">
+      <ol>
+        <li class="menu-item">
+          <button class="btn btn-danger" (click)="getNearestRoskis()">Get Nearest Roskis</button>
+        </li>
+        <li class="menu-item">
+          <button class="btn btn-warning" (click)="flyToUser()">Back To User</button>
+        </li>
+        <li class="menu-item">
+          <button class="btn btn-secondary" (click)="flyToCurrentRoskis()">Fly To the Nearest Roskis</button>
+        </li>
+        <li class="menu-item">
+          <button class="btn btn-info" (click)="cameraMovement()">Rotate Camera</button>
+        </li>
+      </ol>
+     </nav>
+  </div> -->
 
   <div class="box">
     <div #mapdiv ></div>
@@ -21,10 +136,12 @@
 </div>
 
 </div>
-<div class="heading" ><!-- *ngIf="distanceToRoskis > 6" -->
-  <app-distance [distance]="distance" [digit]="digit" [duration]="duration"></app-distance>
+<div class="heading" (click)="burgerTime()"  ><!-- *ngIf="distanceToRoskis > 6" -->
+  <app-distance [distance]="distance" [digit]="digit" [duration]="duration" [destination]="destination" [hideDistance]="hideDistance"></app-distance>
 </div>
 
+</mat-sidenav-content>
+</mat-sidenav-container>
 
 
 <!-- <button class="btn btn-info" hidden (click)="makeObject()">New objectArray</button>
@@ -92,3 +209,5 @@
     </div>
   </div>
 </div> -->
+
+
