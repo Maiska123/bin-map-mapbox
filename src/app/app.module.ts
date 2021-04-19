@@ -1,3 +1,5 @@
+import { DrawingMenuComponent } from './map-box/drawing-menu/drawing-menu.component';
+import { HamburgerMenuComponent } from './map-box/hamburger-menu/hamburger-menu.component';
 import { DistanceComponent } from './map-box/distance/distance.component';
 import { environment } from './../environments/environment';
 import { MapService } from './map.service';
@@ -14,13 +16,16 @@ import { AngularFireDatabaseModule } from 'angularfire2/database';
 import { AngularFirestore } from '@angular/fire/firestore';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { OverlayModule } from "@angular/cdk/overlay";
-
+import {MatSidenavModule} from '@angular/material/sidenav';
+import {MatSlideToggleModule} from '@angular/material/slide-toggle';
 @NgModule({
   declarations: [
     AppComponent,
     MapBoxComponent,
     HelloComponent,
-    DistanceComponent
+    DistanceComponent,
+    HamburgerMenuComponent,
+    DrawingMenuComponent
   ],
   imports: [
     BrowserModule,
@@ -29,7 +34,9 @@ import { OverlayModule } from "@angular/cdk/overlay";
     OverlayModule,
     AngularFireModule.initializeApp(environment.firebaseConfig),
     AngularFireDatabaseModule,
-    BrowserAnimationsModule
+    BrowserAnimationsModule,
+    MatSidenavModule,
+    MatSlideToggleModule
   ],
   providers: [MapService, AngularFirestore],
   bootstrap: [AppComponent]

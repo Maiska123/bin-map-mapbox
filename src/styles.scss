@@ -40,8 +40,27 @@ body{
   background-position: center;
   background-repeat: no-repeat;
   background-attachment: fixed;
+
+}
+/* width */
+::-webkit-scrollbar {
+  width: 10px;
 }
 
+/* Track */
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #888;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
 .layer {
   background: rgb(100,185,196);
   background: linear-gradient(135deg, rgba(100,185,196,0.2) 0%,rgba(6,24,91,0.8) 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */

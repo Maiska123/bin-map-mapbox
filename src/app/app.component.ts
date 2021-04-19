@@ -16,6 +16,9 @@ export class AppComponent {
 
   ngOnInit() {
     this.getUserLocation();
+
+    // const body = document.querySelector('body');
+    // body.style.cursor = 'none';
   }
 
   getUserLocation() {

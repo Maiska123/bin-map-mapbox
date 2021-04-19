@@ -1,10 +1,18 @@
+*, *:before,*:after{
+  transition: all 0.30s ease-in-out;
+}
 
 #map{ height: 100vh; }
 $b: 1.5em; // border-width
 $blur: blur(9px);
 $rect: inset(0);
 
+.heading.closed{
+  transform: translate(-50vw);
+
+}
 .heading{
+
 transition: all 1s ease-in-out;
 max-width: 80vw;
 min-width: calc(30vw+20px);

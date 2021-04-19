@@ -11,6 +11,8 @@ export class DistanceComponent implements OnInit {
   @Input() duration: number;
   @Input() digit: number;
   @Input() steps: number;
+  @Input() destination: string;
+  @Input() hideDistance: boolean;
   @ViewChild("animatedDigit") animatedDigit: ElementRef;
 
   lastDigit: number;
