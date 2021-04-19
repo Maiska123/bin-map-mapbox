@@ -183,7 +183,7 @@ app-drawing-menu{
   // left: 50vw;
    // left: calc(parent(attr(width))+220px);
   // left: calc(var(--width));
-  z-index: 1100;
+  z-index: 1101;
   visibility: visible !important;
   // position: fixed;
 
@@ -191,13 +191,58 @@ app-drawing-menu{
   // padding-right: 10px;
   // top: 50%;
   position: relative;
-    right: -33px;
+    // right: -33px;
     width: 100px;
-    top: -30px;
+    // top: -30px;
     margin: auto;
     background-color: rgba(0,0,0,0.5);
     border-radius: 0px 30px 30px 0px;
+
 }
+
+
+.outer-point2{
+  background-color: rgba(0,0,0,0.5);
+  text-align: center;
+  margin: auto;
+  width: 0;
+  position: inherit;
+  top: 0;
+}
+
+.burgermenu2 {
+  // position: relative;
+  // overflow: visible;
+  // flex: auto;
+    /* z-index: 999999; */
+    // top: 17vh;
+    // position: absolute;
+
+    // top: 22.7vh;
+    // left: 16.8vw;
+
+    // top: 2vh;
+    // position: absolute;
+    /* top: 22.7vh; */
+    // left: 17.3vw;
+
+    // overflow: visible;
+    // flex: auto;
+    /* width: max-content; */
+    // top: 17vh;
+    // top: 2vh;
+    // position: relative;
+    // left: 17.8vw;
+    flex: 1 1 auto;
+    display: inline-block;
+    transform: translateX(0px);
+    top: 12px;
+    position: absolute;
+    right: -98px;
+    z-index: 2;
+    width: 105px;
+}
+
 app-hamburger-menu{
   transition: all 0.5s ease-in-out;
 
@@ -227,6 +272,9 @@ app-hamburger-menu{
   overflow: visible;
   border-radius: 30px;
   left: -30px;
+  .mat-drawer-inner-container{
+    overflow: visible;
+  }
 }
 
 .outer-point{
@@ -236,24 +284,6 @@ app-hamburger-menu{
   width: 0;
 }
 
-.outer-point2{
-  background-color: rgba(0,0,0,0.5);
-  text-align: center;
-  margin: auto;
-  width: 0;
-}
-
-.burgermenu2 {
-  // position: relative;
-  overflow: visible;
-  flex: auto;
-    /* z-index: 999999; */
-    top: 17vh;
-    position: absolute;
-
-    top: 22.7vh;
-    left: 16.8vw;
-}
 
 .container {
   display: flex;
