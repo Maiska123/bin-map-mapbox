@@ -521,7 +521,10 @@ loadingTimed():void {
     var stuff2 = Array.from(document.getElementsByClassName('mapboxgl-ctrl-bottom-left') as HTMLCollectionOf<HTMLElement>);
     var stuff3 = Array.from(document.getElementsByClassName('mapboxgl-ctrl-top-right') as HTMLCollectionOf<HTMLElement>);
     var stuff4 = Array.from(document.getElementsByClassName('mat-drawer-inner-container') as HTMLCollectionOf<HTMLElement>);
- // var stuff5 = document.getElementById('hamburger');
+    // var stuff6 = Array.from(document.getElementsByClassName('mat-drawer-inner-container') as HTMLCollectionOf<HTMLElement>);
+
+
+    // var stuff5 = document.getElementById('hamburger');
 
     // .hamburglar {
     //   margin:10px 40px 10px 25px !important;
@@ -529,7 +532,9 @@ loadingTimed():void {
 
     stuff1[0].style.visibility = "hidden";
     stuff2[0].style.visibility = "hidden";
-    stuff4[0].style.overflow = "visible";
+    stuff4.forEach((element)=>{
+      element.style.overflow = "visible";
+    })
     stuff3[0].style.zIndex = '999';
     stuff3[0].style.transform = 'scale(1.5) translate(-10px, 20px)';
     // stuff2[0].style.visibility = "hidden";
