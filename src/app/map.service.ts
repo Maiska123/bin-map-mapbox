@@ -8,7 +8,7 @@ import * as mapboxgl from 'mapbox-gl';
 import * as firebase from 'firebase/app';
 import 'firebase/firestore';
 import { FirebaseApp } from '@angular/fire';
-import { BehaviorSubject, VirtualTimeScheduler } from 'rxjs';
+import { BehaviorSubject, Observable, VirtualTimeScheduler } from 'rxjs';
 
 @Injectable()
 export class MapService {
@@ -56,6 +56,21 @@ export class MapService {
     return this.db.object('/real-markers/' + $key).remove()
   }
 
+  getLocation(): Observable<any> {
+    return Observable.create(observer => {
+        if(window.navigator && window.navigator.geolocation) {
+            window.navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    observer.next(position);
+                    observer.complete();
+                },
+                (error) => observer.error(error)
+            );
+        } else {
+            observer.error('Unsupported Browser');
+        }
+    });
+}
 
 _routeFunction(req, map) {
 
