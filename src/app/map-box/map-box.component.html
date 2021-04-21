@@ -1,7 +1,11 @@
 <!-- <input type="text" [(ngModel)]="message" placeholder="your message..."> -->
 
 
-<app-drawing-canvas>
+<app-drawing-canvas
+
+*ngIf="paintingOn"
+[paintingToggle]="paintingOn"
+(delete)='deleteQuote($event,i)' >
 
 </app-drawing-canvas>
 
@@ -12,7 +16,7 @@ left: 0;
 right: 0;">
 
   <!-- UTILITY MENU -->
-  <mat-sidenav #sidenav style="    background: black;">
+  <mat-sidenav #sidenav style="z-index:1000; background: black;">
     <div class="container">
       <div style="padding-top: 10px; padding-right: 20px;display: inline-block;">
         <ol style="list-style: none;">
@@ -108,27 +112,19 @@ right: 0;">
     <div class="container" style="min-width: 220px;    max-width: 296px;">
       <div style="padding-top: 10px; padding-right: 20px;display: inline-block;">
         <ol style="list-style: none;">
-          <!-- <li class="menu-item">
-            <button class="btn btn-success" [disabled]="waypoints.length < 1" style="min-width: 190px;" (click)="applyWaypoints()">Get Route With Waypoints</button>
-          </li>
+          <!-- PAINTING TOGGLE MUST BE THE VERY TOP OBJECT -->
+          <mat-slide-toggle color="accent"
+          style="z-index:999999;color:green;"
+          style="transform: scale(2); margin-left: 74px;"
+          (toggleChange)="paintingToggle()"
+          [checked] = "paintingChecked"
+          [disabled] = "paintingSwitchDisabled">
+        </mat-slide-toggle>
+          <li [ngClass]=" paintingOn ? 'menu-item rainbow' : 'menu-item rainbow1'">
+            Painting mode
+           </li>
           <li class="menu-item">
-            <button style="min-width: 190px;" class="btn btn-warning" (click)="flyToUser()">Back To User</button>
-          </li> -->
-          <!-- <li style="max-width: 230px;" class="menu-item" *ngFor="let waypoint of waypoints; index as i" >
-            <button style="max-width: 60px; margin-left: 5px !important;margin-right: 5px !important;" class="btn btn-success" (click)="getToWaypoint(i)">Get To waypoint</button>
-            <button style="max-width: 60px; margin-left: 5px !important;margin-right: 5px !important;" class="btn btn-danger" (click)="deleteWaypoint(i)">Delete Waypoint</button>
-          </li> -->
-          <!-- <li class="menu-item">
-            <button class="btn btn-warning" (click)="flyToUser()">Back To User</button>
-          </li>
-          <li class="menu-item">
-            <button class="btn btn-secondary" (click)="flyToCurrentRoskis()">Fly To the Nearest Roskis</button>
-          </li>
-          <li class="menu-item">
-            <button class="btn btn-success" (click)="applyWaypoints()">Get Route With Waypoints</button>
-          </li>-->
-          <li class="menu-item">
-            <button class="btn btn-info">Dummy</button>
+            <button class="btn btn-info" (click)="deletePainting()">Delete Painting</button>
           </li>
           <li class="menu-item">
             <button class="btn btn-info">Dummy</button>

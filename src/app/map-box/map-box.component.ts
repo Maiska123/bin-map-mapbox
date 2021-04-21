@@ -26,6 +26,18 @@ export class MapBoxComponent implements OnInit{
 
   // lisää ominaisuus että reitti jonka varrelta poimii roskikset
   // voisi esim- näyttää vain ne kun reitti-navigointi on päällä
+
+
+  /* poimii roskikset, näyttää vain ne */
+
+  // - tämä toimisi vallan mainiosti kyllä
+  // - t
+
+  /* reitti-navigointi */
+
+  // - Aito "Navigointi" Vie rutkasti akkua...
+  // - ...mutta sitten jos sitä käyttäjän sijaintia pollataa vaa vähä väliä nii.
+
   @ViewChild('sidenav') sidenav: MatSidenav;
   @ViewChild('sidenav1') sidenav1: MatSidenav;
   @ViewChild('sidenav2') sidenav2: MatSidenav;
@@ -33,6 +45,7 @@ export class MapBoxComponent implements OnInit{
   // @ViewChild('sidenav') public sidenav: MdSidenav;
   public map: mapboxgl.Map;
   toogle = new FormControl('', []);
+  i:any;
 
   turf: any;
 
@@ -49,6 +62,33 @@ export class MapBoxComponent implements OnInit{
   roskisData: any[] = [];
   roskisCoordData: any[] = [];
   @Output('destination') destination: string = '';
+
+
+  paintingChecked:boolean = false;
+
+  // (toggleChange)="paintingToggle()"
+  // [checked] = "paintingChecked"
+  // [disabled] = "paintingSwitchDisabled"
+  // "deletePainting()"
+
+  paintingSwitchDisabled:boolean = false;
+  paintingOn:boolean = false;
+
+  deleteQuote(event:any,i:any) {
+
+  }
+
+  paintingToggle(){
+    this.paintingOn = !this.paintingOn;
+    console.log('paintingOn'+this.paintingOn);
+    console.log('paintingChecked'+this.paintingChecked);
+    console.log('paintingSwitchDisabled'+this.paintingSwitchDisabled);
+  }
+
+
+  deletePainting(){
+
+  }
 
   @ViewChild("animatedDigit") animatedDigit: ElementRef;
   @ViewChild("mapdiv") mapdiv: ElementRef;
@@ -1613,5 +1653,7 @@ getNearestPoint(fromCoordindexes: any[],pointCoordinates: any[]): number{
     if (Array.from(markerIndex)[0]) { return coords;
     } else { return coordinates;}
   }
+
+
 
 }

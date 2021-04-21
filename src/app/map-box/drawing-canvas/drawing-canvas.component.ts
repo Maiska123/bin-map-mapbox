@@ -1,5 +1,5 @@
 
-import { Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, EventEmitter, HostListener, Input, OnInit, Output, ViewChild } from '@angular/core';
 
 @Component({
   selector: 'app-drawing-canvas',
@@ -14,6 +14,10 @@ export class DrawingCanvasComponent implements OnInit {
   @ViewChild('canvas', {static: true}) canvas: ElementRef;
 
   ctx: CanvasRenderingContext2D;
+
+  @Input('paintingToggle') PaintingToggle: boolean = false;
+
+
   painting: boolean = false;
 
   // imageData.data[0] -> pixel1 red value
@@ -43,6 +47,9 @@ export class DrawingCanvasComponent implements OnInit {
 //     if(X >= canvas1.width) { Y+=1; X = 0 }
 // }
 
+  @Output() delete:EventEmitter<any> = new EventEmitter<any>();
+
+
   constructor() { }
 
   @HostListener('window:resize', ['$event'])
@@ -55,6 +62,12 @@ export class DrawingCanvasComponent implements OnInit {
       console.log(this.ctx);
       console.log(this.canvas);
     }
+
+  onCanvasDrawn() {
+    //you need to emit event
+    this.delete.emit(false);
+    // this can be done from button click mostly, which i am guessing is your case
+  }
 
   startPosition(e){
     this.painting = true;
@@ -88,6 +101,12 @@ export class DrawingCanvasComponent implements OnInit {
     // this.ctx = Array.from(document.getElementsByClassName('mapboxgl-ctrl-bottom-right') as HTMLCollectionOf<HTMLElement>);
     this.ctx = this.canvas.nativeElement.getContext('2d');
     // this.context = this.myCanvas.nativeElement.getContext('2d');
+
+    this.canvas.nativeElement.width = document.body.getAttribute('width');
+    this.canvas.nativeElement.height = document.body.getAttribute('height');
+
+    this.canvas.nativeElement.width = document.body.clientWidth;
+    this.canvas.nativeElement.height = document.body.clientHeight;
 
     this.canvas.nativeElement.addEventListener('mousedown', (e) => {
       console.log('Button clicked' + name);
