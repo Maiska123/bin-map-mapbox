@@ -236,12 +236,93 @@ app-drawing-menu{
     flex: 1 1 auto;
     display: inline-block;
     transform: translateX(0px);
-    top: 12px;
+    top: 26px;
     position: absolute;
     right: -98px;
     z-index: 2;
     width: 105px;
 }
+
+.burgermenu1 {
+  top: 206px;
+  position: absolute;
+
+  transform: translateX(0px);
+  // top: 26px;
+  position: absolute;
+  right: -98px;
+  z-index: 2;
+  width: 105px;
+}
+
+app-painting-menu{
+  transition: all 0.5s ease-in-out;
+
+  // position: fixed;
+  // top: 50vh;
+  // left: 50vw;
+   // left: calc(parent(attr(width))+220px);
+  // left: calc(var(--width));
+  z-index: 1101;
+  visibility: visible !important;
+  // position: fixed;
+
+  // left: 15vw;
+  // padding-right: 10px;
+  // top: 50%;
+  position: relative;
+    // right: -33px;
+    width: 100px;
+    // top: -30px;
+    margin: auto;
+    background-color: rgba(0,0,0,0.5);
+    border-radius: 0px 30px 30px 0px;
+
+}
+
+
+.outer-point3{
+  background-color: rgba(0,0,0,0.5);
+  text-align: center;
+  margin: auto;
+  width: 0;
+  position: inherit;
+  top: 0;
+}
+
+.burgermenu3 {
+  // position: relative;
+  // overflow: visible;
+  // flex: auto;
+    /* z-index: 999999; */
+    // top: 17vh;
+    // position: absolute;
+
+    // top: 22.7vh;
+    // left: 16.8vw;
+
+    // top: 2vh;
+    // position: absolute;
+    /* top: 22.7vh; */
+    // left: 17.3vw;
+
+    // overflow: visible;
+    // flex: auto;
+    /* width: max-content; */
+    // top: 17vh;
+    // top: 2vh;
+    // position: relative;
+    // left: 17.8vw;
+    flex: 1 1 auto;
+    display: inline-block;
+    transform: translateX(0px);
+    top: 116px;
+    position: absolute;
+    right: -98px;
+    z-index: 2;
+    width: 105px;
+}
+
 app-drawing-canvas{
   z-index: 501;
   width: 100vw;
