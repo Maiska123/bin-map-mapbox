@@ -11,6 +11,7 @@ bottom: 0;
 left: 0;
 right: 0;">
 
+  <!-- UTILITY MENU -->
   <mat-sidenav #sidenav style="    background: black;">
     <div class="container">
       <div style="padding-top: 10px; padding-right: 20px;display: inline-block;">
@@ -54,6 +55,7 @@ right: 0;">
 
   </mat-sidenav>
 
+  <!-- WAYPOINT MENU -->
   <mat-sidenav #sidenav1 mode="side" position="start" role="navigation" class="sidenav-wv" style="
   z-index: 999;
   visibility: visible;
@@ -88,6 +90,66 @@ right: 0;">
 
       <div class="outer-point2">
         <app-drawing-menu class="burgermenu2" (click)="burgerTime2()"  [isClosed]="burgertime2" style="flex: auto;display: inline-block;"></app-drawing-menu>
+      </div>
+<!--
+      <div class="outer-point2">
+        <app-hamburger-menu class="burgermenu2" (click)="burgerTime2()"  [isClosed]="burgertime2" style="flex: auto;display: inline-block;"></app-hamburger-menu>
+      </div> -->
+
+
+    </div>
+  </mat-sidenav>
+
+  <!-- PAINTING MENU -->
+  <mat-sidenav #sidenav2 mode="side" position="start" role="navigation" class="sidenav-wv" style="
+  z-index: 999;
+  visibility: visible;
+  top: 29vh !important;    background: black;">
+    <div class="container" style="min-width: 220px;    max-width: 296px;">
+      <div style="padding-top: 10px; padding-right: 20px;display: inline-block;">
+        <ol style="list-style: none;">
+          <!-- <li class="menu-item">
+            <button class="btn btn-success" [disabled]="waypoints.length < 1" style="min-width: 190px;" (click)="applyWaypoints()">Get Route With Waypoints</button>
+          </li>
+          <li class="menu-item">
+            <button style="min-width: 190px;" class="btn btn-warning" (click)="flyToUser()">Back To User</button>
+          </li> -->
+          <!-- <li style="max-width: 230px;" class="menu-item" *ngFor="let waypoint of waypoints; index as i" >
+            <button style="max-width: 60px; margin-left: 5px !important;margin-right: 5px !important;" class="btn btn-success" (click)="getToWaypoint(i)">Get To waypoint</button>
+            <button style="max-width: 60px; margin-left: 5px !important;margin-right: 5px !important;" class="btn btn-danger" (click)="deleteWaypoint(i)">Delete Waypoint</button>
+          </li> -->
+          <!-- <li class="menu-item">
+            <button class="btn btn-warning" (click)="flyToUser()">Back To User</button>
+          </li>
+          <li class="menu-item">
+            <button class="btn btn-secondary" (click)="flyToCurrentRoskis()">Fly To the Nearest Roskis</button>
+          </li>
+          <li class="menu-item">
+            <button class="btn btn-success" (click)="applyWaypoints()">Get Route With Waypoints</button>
+          </li>-->
+          <li class="menu-item">
+            <button class="btn btn-info">Dummy</button>
+          </li>
+          <li class="menu-item">
+            <button class="btn btn-info">Dummy</button>
+          </li>
+          <li class="menu-item">
+            <button class="btn btn-info">Dummy</button>
+          </li>
+          <li class="menu-item">
+            <button class="btn btn-info">Dummy</button>
+          </li>
+          <li class="menu-item">
+            <button class="btn btn-info">Dummy</button>
+          </li>
+          <li class="menu-item">
+            <button class="btn btn-info">Dummy</button>
+          </li>
+        </ol>
+      </div>
+
+      <div class="outer-point3">
+        <app-painting-menu class="burgermenu3" (click)="burgerTime3()"  [isClosed]="burgertime3" style="flex: auto;display: inline-block;"></app-painting-menu>
       </div>
 <!--
       <div class="outer-point2">

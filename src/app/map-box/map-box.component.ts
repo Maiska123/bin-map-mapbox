@@ -11,6 +11,7 @@ import { AngularFireList } from '@angular/fire/database';
 import Swal from 'sweetalert2';
 import { MatSidenav } from '@angular/material/sidenav';
 import { FormControl } from '@angular/forms';
+import * as turf from '@turf/turf';
 //import * as proj4 from "proj4";
 
 @Component({
@@ -27,10 +28,14 @@ export class MapBoxComponent implements OnInit{
   // voisi esim- näyttää vain ne kun reitti-navigointi on päällä
   @ViewChild('sidenav') sidenav: MatSidenav;
   @ViewChild('sidenav1') sidenav1: MatSidenav;
+  @ViewChild('sidenav2') sidenav2: MatSidenav;
   // @Input() checked: boolean;
   // @ViewChild('sidenav') public sidenav: MdSidenav;
   public map: mapboxgl.Map;
   toogle = new FormControl('', []);
+
+  turf: any;
+
 
   style = 'mapbox://styles/maiska/ckn5ni6gd0q1a17oykioohezf/draft';
   lat = 61.498643;
@@ -84,6 +89,7 @@ export class MapBoxComponent implements OnInit{
   isOpen = true;
   burgermenu1: any;
   burgermenu2: any;
+  burgermenu3: any;
 
   roskisUrl = 'https://geodata.tampere.fi/geoserver/maankaytto/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=maankaytto:WFS_ROSKIS&outputFormat=json'
 
@@ -113,13 +119,14 @@ export class MapBoxComponent implements OnInit{
 
   nums: Array<number> = [25, 76, 48];
 
-  @ViewChild("oneItem") oneItem: any;
+  @ViewChild("oneItem") oneItem: ElementRef;
   @ViewChildren("count") count: QueryList<any>;
   @Output("digit") digit: number = 0;
   @Output("duration") duration: number = 1000;
   @Output("hideDistance") hideDistance: boolean = true;
   @Output("burgertime") burgertime: boolean = true;
   @Output("burgertime2") burgertime2: boolean = true;
+  @Output("burgertime3") burgertime3: boolean = true;
   clicked: any;
 
   constructor(private mapService: MapService,
@@ -176,6 +183,20 @@ burgerTime2() {
   // } else {this.burgermenu1[0].style.visibility = 'hidden'}
   // this.burgertime = !this.burgertime;
   this.sidenav1.toggle();
+}
+
+burgerTime3() {
+
+  // if (!this.burgertime){
+  //   this.burgermenu2[0].style.transform = 'translateX(0px)';
+  // } else if (!this.burgertime)
+  // {this.burgermenu2[0].style.transform = 'translateX(100px)'}
+
+  // if (this.burgermenu1[0].style.visibility == 'hidden'){
+  //   this.burgermenu1[0].style.visibility = 'visible'
+  // } else {this.burgermenu1[0].style.visibility = 'hidden'}
+  // this.burgertime = !this.burgertime;
+  this.sidenav2.toggle();
 }
 
 // Via Promise
@@ -504,11 +525,37 @@ loadingTimed():void {
 
     this.burgermenu1 = Array.from(document.getElementsByClassName('burgermenu1') as HTMLCollectionOf<HTMLElement>);
     this.burgermenu2 = Array.from(document.getElementsByClassName('burgermenu2') as HTMLCollectionOf<HTMLElement>);
+    this.burgermenu3 = Array.from(document.getElementsByClassName('burgermenu3') as HTMLCollectionOf<HTMLElement>);
 
     this.sidenav.openedChange.subscribe(() => {this.burgertime = !this.burgertime,
-      !this.burgertime ? (this.burgermenu2[0].style.transform = 'translateX(-100px)', this.burgermenu1[0].style.zIndex = '100') : (this.burgermenu2[0].style.transform = 'translateX(0px)',this.burgermenu1[0].style.zIndex = '2')});
+      !this.burgertime ? (
+        this.burgermenu2[0].style.transform = 'translateX(-100px)',
+        this.burgermenu3[0].style.transform = 'translateX(-100px)',
+        this.burgermenu1[0].style.zIndex = '100'
+       ) : (
+        this.burgermenu2[0].style.transform = 'translateX(0px)',
+        this.burgermenu3[0].style.transform = 'translateX(0px)',
+        this.burgermenu1[0].style.zIndex = '2')});
+
     this.sidenav1.openedChange.subscribe(() => {this.burgertime2 = !this.burgertime2,
-      !this.burgertime2 ? (this.burgermenu1[0].style.transform = 'translateX(-100px)', this.burgermenu2[0].style.zIndex = '100') : (this.burgermenu1[0].style.transform = 'translateX(0px)',this.burgermenu2[0].style.zIndex = '2')});
+      !this.burgertime2 ? (
+        this.burgermenu1[0].style.transform = 'translateX(-100px)',
+        this.burgermenu3[0].style.transform = 'translateX(-100px)',
+        this.burgermenu2[0].style.zIndex = '100'
+        ) : (
+          this.burgermenu1[0].style.transform = 'translateX(0px)',
+          this.burgermenu3[0].style.transform = 'translateX(0px)',
+          this.burgermenu2[0].style.zIndex = '2')});
+
+    this.sidenav2.openedChange.subscribe(() => {this.burgertime3 = !this.burgertime3,
+        !this.burgertime3 ? (
+          this.burgermenu1[0].style.transform = 'translateX(-100px)',
+          this.burgermenu2[0].style.transform = 'translateX(-100px)',
+          this.burgermenu3[0].style.zIndex = '100'
+          ) : (
+          this.burgermenu1[0].style.transform = 'translateX(0px)',
+          this.burgermenu2[0].style.transform = 'translateX(0px)',
+          this.burgermenu3[0].style.zIndex = '2')});
 
 
     //Called after ngAfterContentInit when the component's view has been initialized. Applies to components only.
@@ -580,7 +627,7 @@ loadingTimed():void {
       style: this.style,
       zoom: 16,
       maxZoom: 19,
-      minZoom: 14,
+      minZoom: 13,
       minPitch: 0,
       maxPitch: 67,
       center: [this.lng, this.lat]
@@ -621,7 +668,10 @@ loadingTimed():void {
     //// Add Marker on Click -- ONCLICK GET ROUTE
     this.map.on('click', (event) => {
 
-
+      var point = turf.point([23.84629822, 61.44356812]);
+      var buffered = turf.buffer(point, 5, {units:'kilometers'});
+      var bbox = turf.bbox(buffered);
+      console.log(turf.bboxPolygon(bbox));
         // var features = this.map.queryRenderedFeatures(bbox, {
         // layers: ['counties']
         // });
@@ -644,7 +694,7 @@ loadingTimed():void {
       //console.log(newMarker)
 
       // set bbox as 5px reactangle area around clicked point
-      var bbox = [
+      var bboxClick = [
         // [event.point.x - 5, event.point.y - 5],
         // [event.point.x + 5, event.point.y + 5]
         [event.lngLat.lng - 0.0005, event.lngLat.lat - 0.0005],
@@ -654,13 +704,13 @@ loadingTimed():void {
       //console.log(bbox);
 
       var bboxCoord1: Coordinate = {
-        lon: bbox[0][0],
-        lat: bbox[0][1]
+        lon: bboxClick[0][0],
+        lat: bboxClick[0][1]
       }
 
       var bboxCoord2: Coordinate = {
-        lon: bbox[1][0],
-        lat: bbox[1][1]
+        lon: bboxClick[1][0],
+        lat: bboxClick[1][1]
       }
 
 

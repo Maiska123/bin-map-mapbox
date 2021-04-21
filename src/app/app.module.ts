@@ -1,3 +1,4 @@
+import { PaintingMenuComponent } from './map-box/painting-menu/painting-menu.component';
 import { DrawingCanvasComponent } from './map-box/drawing-canvas/drawing-canvas.component';
 import { DrawingMenuComponent } from './map-box/drawing-menu/drawing-menu.component';
 import { HamburgerMenuComponent } from './map-box/hamburger-menu/hamburger-menu.component';
@@ -27,7 +28,8 @@ import {MatSlideToggleModule} from '@angular/material/slide-toggle';
     DistanceComponent,
     HamburgerMenuComponent,
     DrawingMenuComponent,
-    DrawingCanvasComponent
+    DrawingCanvasComponent,
+    PaintingMenuComponent
   ],
   imports: [
     BrowserModule,
