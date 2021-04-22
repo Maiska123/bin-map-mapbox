@@ -801,7 +801,7 @@ loadingTimed():void {
 // class="mapboxgl-ctrl mapboxgl-ctrl-attrib"
 // class="mapboxgl-ctrl-bottom-left"
 
-    var stuff1 = Array.from(document.getElementsByClassName('mapboxgl-ctrl-bottom-right') as HTMLCollectionOf<HTMLElement>);
+    var stuff1 = Array.from(document.getElementsByClassName('mapboxgl-ctrl-attrib') as HTMLCollectionOf<HTMLElement>);
     var stuff2 = Array.from(document.getElementsByClassName('mapboxgl-ctrl-bottom-left') as HTMLCollectionOf<HTMLElement>);
     var stuff3 = Array.from(document.getElementsByClassName('mapboxgl-ctrl-top-right') as HTMLCollectionOf<HTMLElement>);
     var stuff4 = Array.from(document.getElementsByClassName('mat-drawer-inner-container') as HTMLCollectionOf<HTMLElement>);
@@ -892,7 +892,7 @@ loadingTimed():void {
       flyTo: false
       });
 
-      this.map.addControl(directions, "top-right");
+      this.map.addControl(directions, "bottom-right");
 
     //// Add Marker on Click -- ONCLICK ADD MARKER
     // this.map.on('click', (event) => {
