@@ -9,13 +9,15 @@ import { Component, ElementRef, EventEmitter, HostListener, Input, OnInit, Outpu
 export class DrawingCanvasComponent implements OnInit {
   public innerWidth: any;
   public innerHeight: any;
-
+  x: any;
+  y: any;
   // @ViewChild('canvas') canvas: any;
   @ViewChild('canvas', {static: true}) canvas: ElementRef;
 
   ctx: CanvasRenderingContext2D;
 
   @Input('paintingToggle') PaintingToggle: boolean = false;
+  @Input('brushColor') brushColor: string = '';
 
 
   painting: boolean = false;
@@ -48,6 +50,7 @@ export class DrawingCanvasComponent implements OnInit {
 // }
 
   @Output() delete:EventEmitter<any> = new EventEmitter<any>();
+  @Output() createPoint:EventEmitter<any> = new EventEmitter<any>();
 
 
   constructor() { }
@@ -71,6 +74,8 @@ export class DrawingCanvasComponent implements OnInit {
 
   startPosition(e){
     this.painting = true;
+    this.x = e.pageX;
+    this.y = e.pageY;
     this.draw(e);
   }
 
@@ -80,18 +85,32 @@ export class DrawingCanvasComponent implements OnInit {
 
     var drawData = this.ctx.getImageData(0, 0, this.canvas.nativeElement.width, this.canvas.nativeElement.height)
     console.log(drawData);
+    this.onCanvasDrawn();
+    //this.PaintingToggle = !this.PaintingToggle;
   }
 
   draw(e){
     if(!this.painting) return;
     this.ctx.lineWidth = 10;
     this.ctx.lineCap = 'round';
+    this.ctx.strokeStyle = this.brushColor;
     // this.ctx. = 'black';
 
     this.ctx.lineTo(e.clientX, e.clientY);
     this.ctx.stroke();
     this.ctx.beginPath();
     this.ctx.moveTo(e.clientX,e.clientY);
+
+    var math = Math.round(Math.sqrt(Math.pow(this.y - e.clientY, 2) +
+    Math.pow(this.x - e.clientX, 2)));
+
+    if (math > 9){
+
+      this.createPoint.emit(e);
+
+      this.x = e.pageX;
+      this.y = e.pageY;
+    }
   }
 
   ngOnInit() {

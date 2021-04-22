@@ -1,3 +1,4 @@
+import { DrawingCanvasComponent } from './drawing-canvas/drawing-canvas.component';
 import { Coordinate } from './../utils/interfaces';
 
 import { MapService } from './../map.service';
@@ -12,6 +13,13 @@ import Swal from 'sweetalert2';
 import { MatSidenav } from '@angular/material/sidenav';
 import { FormControl } from '@angular/forms';
 import * as turf from '@turf/turf';
+import * as MapboxDraw from "@mapbox/mapbox-gl-draw";
+// import * as MapboxDirections from "@mapbox/mapbox-gl-direction";
+// import * as MapboxDirections from 'mapbox-gl-directions'
+// import 'mapbox-gl-directions/dist/mapbox-gl-directions.css'
+import * as FreehandMode from 'mapbox-gl-draw-freehand-mode';
+import { MatSlideToggle } from '@angular/material/slide-toggle';
+import { geojsonType } from '@turf/turf';
 //import * as proj4 from "proj4";
 
 @Component({
@@ -21,7 +29,7 @@ import * as turf from '@turf/turf';
 })
 
 export class MapBoxComponent implements OnInit{
-
+  MapboxDirections = window.MapboxDirections;
   /// default settings
 
   // lisää ominaisuus että reitti jonka varrelta poimii roskikset
@@ -41,6 +49,7 @@ export class MapBoxComponent implements OnInit{
   @ViewChild('sidenav') sidenav: MatSidenav;
   @ViewChild('sidenav1') sidenav1: MatSidenav;
   @ViewChild('sidenav2') sidenav2: MatSidenav;
+  @ViewChild('paintingToggle') paintToggle: MatSlideToggle;
   // @Input() checked: boolean;
   // @ViewChild('sidenav') public sidenav: MdSidenav;
   public map: mapboxgl.Map;
@@ -48,7 +57,7 @@ export class MapBoxComponent implements OnInit{
   i:any;
 
   turf: any;
-
+  brushColor: string = '#000000';
 
   style = 'mapbox://styles/maiska/ckn5ni6gd0q1a17oykioohezf/draft';
   lat = 61.498643;
@@ -63,6 +72,34 @@ export class MapBoxComponent implements OnInit{
   roskisCoordData: any[] = [];
   @Output('destination') destination: string = '';
 
+  geojsonPaint: GeoJSON.FeatureCollection<any> = {
+      type: 'FeatureCollection',
+      features: [
+        {
+          type: 'Feature',
+          geometry: {
+            type: 'LineString',
+            coordinates: []
+          },
+          properties: {}
+        }
+      ]
+    };
+
+  geojson = {
+      "name":"NewFeatureType",
+      "type":"FeatureCollection",
+      "features":[{
+          "type":"Feature",
+          "geometry":{
+              "type":"LineString",
+              "coordinates":[]
+          },
+          "properties":null
+      }]
+  };
+// then you do pushing into coordinates array
+
 
   paintingChecked:boolean = false;
 
@@ -73,13 +110,161 @@ export class MapBoxComponent implements OnInit{
 
   paintingSwitchDisabled:boolean = false;
   paintingOn:boolean = false;
+  paintCoords: any[] = [];
+  eventData: any;
 
-  deleteQuote(event:any,i:any) {
+  createPoint(event:any,i:any) {
+    var x,y;
+    this.eventData = event;
+    x = event.pageX, y = event.pageY;
+    console.log('x: '+x +' ' + 'y: '+ y);
+    // this.map.on('click', (event) => {
+    //   const coordinates = [event.lngLat.lng, event.lngLat.lat]
+    // this.map.fire('click', (event));
+    //this.eventFire(document.getElementById('map'), 'click');
+
+    // this.map.queryRenderedFeatures();
+
+  //   document.getElementById('map')
+  // .dispatchEvent(new MouseEvent('click', { screenX: x, screenY: y }))
+  this.simulatedClick(document.getElementsByClassName('mapboxgl-canvas')[0],{clientX:x,clientY:y})
+  // this.simulatedClick(document.getElementById('map'))
+  // this.map.fire('foo');
 
   }
 
-  paintingToggle(){
-    this.paintingOn = !this.paintingOn;
+  simulatedClick(target, options?) {
+    // console.log('this.simulatedClick');
+    var event = target.ownerDocument.createEvent('MouseEvents'),
+        options = options || {},
+        opts = { // These are the default values, set up for un-modified left clicks
+          type: 'click',
+          canBubble: true,
+          cancelable: true,
+          view: target.ownerDocument.defaultView,
+          detail: 1,
+          screenX: 0, //The coordinates within the entire page
+          screenY: 0,
+          clientX: 0, //The coordinates within the viewport
+          clientY: 0,
+          ctrlKey: false,
+          altKey: false,
+          shiftKey: false,
+          metaKey: false, //I *think* 'meta' is 'Cmd/Apple' on Mac, and 'Windows key' on Win. Not sure, though!
+          button: 0, //0 = left, 1 = middle, 2 = right
+          relatedTarget: null,
+        };
+
+    //Merge the options with the defaults
+    for (var key in options) {
+      if (options.hasOwnProperty(key)) {
+        opts[key] = options[key];
+      }
+    }
+
+    //Pass in the options
+    event.initMouseEvent(
+        opts.type,
+        opts.canBubble,
+        opts.cancelable,
+        opts.view,
+        opts.detail,
+        opts.screenX,
+        opts.screenY,
+        opts.clientX,
+        opts.clientY,
+        opts.ctrlKey,
+        opts.altKey,
+        opts.shiftKey,
+        opts.metaKey,
+        opts.button,
+        opts.relatedTarget
+    );
+
+    //Fire the event
+    target.dispatchEvent(event);
+  }
+
+
+  eventFire(el, etype){
+    if (el.fireEvent) {
+      el.fireEvent('on' + etype);
+    } else {
+      var evObj = document.createEvent('Events');
+      evObj.initEvent(etype, true, false);
+      el.dispatchEvent(evObj);
+    }
+  }
+
+
+
+  deleteQuote(event:any,i:any) {
+    this.paintToggle.toggle();
+    this.paintingOn = false;
+
+
+    if (this.map.getLayer('canvas-layer')){
+      this.map.removeLayer('canvas-layer');
+      this.map.removeSource('canvas-source');
+    }
+    var bounds: any[][] = this.map.getBounds().toArray();
+
+    console.log(bounds);
+    var boundsArray: any[] =
+    [ [ bounds[0][0], bounds[1][1] ],
+      [ bounds[1][0], bounds[1][1] ],
+      [ bounds[1][0], bounds[0][1] ],
+      [ bounds[0][0], bounds[0][1] ]
+    ];
+
+      this.map.addSource('canvas-source', {
+      type: 'canvas',
+      canvas: 'canvasID',
+      coordinates: boundsArray,
+        // [91.4461, 21.5006],
+        // [100.3541, 21.5006],
+        // [100.3541, 13.9706],
+        // [91.4461, 13.9706]
+
+        // Set to true if the canvas source is animated. If the canvas is static, animate should be set to false to improve performance.
+
+      animate: true
+      });
+
+      this.map.addLayer({
+        id: 'canvas-layer',
+        type: 'raster',
+        source: 'canvas-source'
+        });
+
+
+    this.createGeoJSONLine(this.geojson);
+    // array is full of coords from last run, lets purge them before next event is fired.
+    this.paintCoords = [];
+  }
+
+  changeBrushColor(color: string){
+    this.brushColor = color;
+  }
+
+
+  paintToggleChange(){
+    // kun mahdollisesti löytyy jo jokin piirros kartalta
+    // vaihdetaan pensselin väriä että erottuisi
+    // edellisestä taideteoksesta
+    var max = 255;
+    var min = 0;
+
+    var R = ((Math.random() * (max - min + 1) ) << 0);
+    var G = ((Math.random() * (max - min + 1) ) << 0);
+    var B = ((Math.random() * (max - min + 1) ) << 0);
+
+
+    (this.map.getLayer('canvas-layer')) ?
+    this.changeBrushColor(`rgba(${R},${G},${B},1)`):
+    this.changeBrushColor("rgba(0,0,0,1)");
+
+     this.paintingOn = !this.paintingOn;
     console.log('paintingOn'+this.paintingOn);
     console.log('paintingChecked'+this.paintingChecked);
     console.log('paintingSwitchDisabled'+this.paintingSwitchDisabled);
@@ -87,7 +272,10 @@ export class MapBoxComponent implements OnInit{
 
 
   deletePainting(){
-
+    if (this.map.getLayer('canvas-layer')){
+      this.map.removeLayer('canvas-layer');
+      this.map.removeSource('canvas-source');
+    }
   }
 
   @ViewChild("animatedDigit") animatedDigit: ElementRef;
@@ -563,6 +751,15 @@ loadingTimed():void {
 
   ngAfterViewInit(): void {
 
+    // const Draw = new MapboxDraw({
+    //   modes: Object.assign(MapboxDraw.modes, {
+    //     draw_polygon: FreehandMode
+    //   })
+    // });
+
+    // this.map.addControl(Draw);
+
+
     this.burgermenu1 = Array.from(document.getElementsByClassName('burgermenu1') as HTMLCollectionOf<HTMLElement>);
     this.burgermenu2 = Array.from(document.getElementsByClassName('burgermenu2') as HTMLCollectionOf<HTMLElement>);
     this.burgermenu3 = Array.from(document.getElementsByClassName('burgermenu3') as HTMLCollectionOf<HTMLElement>);
@@ -623,7 +820,7 @@ loadingTimed():void {
       element.style.overflow = "visible";
     })
     stuff3[0].style.zIndex = '999';
-    stuff3[0].style.transform = 'scale(1.5) translate(-10px, 20px)';
+    stuff3[0].style.transform = 'scale(1.5) translate(-10px, 40px)';
     // stuff2[0].style.visibility = "hidden";
 
     // stuff5[0].style.margin = '10px 40px 10px 25px !important';
@@ -677,6 +874,25 @@ loadingTimed():void {
     /// Add map controls
     this.map.addControl(new mapboxgl.NavigationControl());
 
+    const Draw = new MapboxDraw({
+      modes: Object.assign(MapboxDraw.modes, {
+        draw_polygon: FreehandMode
+      })
+    });
+
+    this.map.addControl(Draw);
+
+    var directions = new this.MapboxDirections({
+      accessToken: mapboxgl.accessToken,
+      unit: 'metric',
+      profile: 'mapbox/walking',
+      alternatives: false,
+      geometries: 'geojson',
+      controls: { instructions: false },
+      flyTo: false
+      });
+
+      this.map.addControl(directions, "top-right");
 
     //// Add Marker on Click -- ONCLICK ADD MARKER
     // this.map.on('click', (event) => {
@@ -707,11 +923,13 @@ loadingTimed():void {
 
     //// Add Marker on Click -- ONCLICK GET ROUTE
     this.map.on('click', (event) => {
+      // console.log('this.map.on(click, (event)');
 
-      var point = turf.point([23.84629822, 61.44356812]);
-      var buffered = turf.buffer(point, 5, {units:'kilometers'});
-      var bbox = turf.bbox(buffered);
-      console.log(turf.bboxPolygon(bbox));
+      if (!this.paintingOn){
+      // var point = turf.point([23.84629822, 61.44356812]);
+      // var buffered = turf.buffer(point, 5, {units:'kilometers'});
+      // var bbox = turf.bbox(buffered);
+      // console.log(turf.bboxPolygon(bbox));
         // var features = this.map.queryRenderedFeatures(bbox, {
         // layers: ['counties']
         // });
@@ -893,10 +1111,36 @@ loadingTimed():void {
         this.clicked = false;
       })
 
-
+      } // if !this.paintingOn END
+      else {
+        // const coordinates = [this.eventData.lngLat.lng, this.eventData.lngLat.lat]
+        const coordinates = [event.lngLat.lng, event.lngLat.lat];
+        this.paintCoords.push(coordinates);
+        // this.geojsonPaint.features[0].geometry.c
+        this.geojsonPaint.features[0].geometry.coordinates.push(coordinates);
+        console.log(this.paintCoords);
+        console.log('this.paintCoords');
+        console.log(this.geojsonPaint);
+      }
       //this.getRoute(coordinates);// mapService.createMarker(newMarker)
+      // console.log(event)
+
     })
 
+    // FOO EVENT
+    this.map.on('foo', (event) => {
+
+      //  fire event "mapboxgl-canvas"
+      console.log(event)
+      // {"x":581,"y":70}
+      //this.map.
+      const coordinates = [event.lngLat.lng, event.lngLat.lat];
+      this.paintCoords.push(coordinates);
+      // this.geojsonPaint.features[0].geometry.c
+      this.geojsonPaint.features[0].geometry.coordinates.push(coordinates);
+      console.log(this.paintCoords);
+
+    })
 
     /// Add realtime firebase data on map load
     this.map.on('load', (event) => {
@@ -1026,7 +1270,7 @@ loadingTimed():void {
       // make an initial directions request that
       // starts and ends at the same location
       var start = [this.lng, this.lat];
-      this.getRoute(start);
+      //this.getRoute(start);
 
       // Add starting point to the map
       this.map.addLayer({
@@ -1062,6 +1306,85 @@ loadingTimed():void {
 
 
   /// Helpers
+
+  createGeoJSONLine(coords?:any){
+    console.log('here we are');
+    console.log(coords);
+    console.log(this.geojsonPaint);
+
+
+
+
+    // this.map.addLayer({
+    //   id: 'route',
+    //   type: 'line',
+    //   source: {
+    //     type: 'geojson',
+    //     data: {
+    //       type: 'Feature',
+    //       properties: {},
+    //       geometry: {
+    //         type: 'LineString',
+    //         coordinates: geojson // eslint-disable-line no-use-before-define
+    //       }
+    //     }
+    //   },
+    //   layout: {
+    //     'line-join': 'round',
+    //     'line-cap': 'round'
+    //   },
+    //   paint: {
+    //     // 'line-color': '#3887be',
+    //     'line-color': '#ffc107',
+    //     'line-width': 5,
+    //     'line-opacity': 0.75
+    //   }
+    // });
+
+
+
+    if (this.map.getSource('route')) {
+      this.map.removeLayer('route');
+      this.map.removeSource('route');
+    }
+      // console.log('if');
+      // this.map.getSource('route').setData(this.geojsonPaint); // eslint-disable-line no-use-before-define
+    // } else {
+      // console.log('else');
+
+      this.map.addLayer({
+        "id": "route",
+        "type": "line",
+        "source": {
+            "type": "geojson",
+            "data": {
+                "type": "Feature",
+                "properties": {},
+                "geometry": {
+                    "type": "LineString",
+                    "coordinates": this.geojsonPaint.features[0].geometry.coordinates
+                        // [-122.48369693756104, 37.83381888486939],
+                        // [-122.48348236083984, 37.83317489144141],
+                        // [-122.48339653015138, 37.83270036637107],
+                        // [-122.48356819152832, 37.832056363179625]
+
+                }
+            }
+        }, "layout": {
+            'line-join': 'round',
+            'line-cap': 'round'
+          },
+        "paint": {
+            'line-color': '#ffc107',
+            'line-width': 5,
+            'line-opacity': 0.75
+            // "line-color": "#888",
+            // "line-width": 8,
+            // "line-gap-width": 10
+        }
+      });
+
+  }
 
   removeMarker(marker) {
     this.mapService.removeMarker(marker.$key)
@@ -1468,6 +1791,7 @@ routeFunction(req) {
       coordinates: route
     }
   };
+
   // if the route already exists on the map, reset it using setData
   if (this.map.getSource('route')) {
     this.map.getSource('route').setData(geojson); // eslint-disable-line no-use-before-define
