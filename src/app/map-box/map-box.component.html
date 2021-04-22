@@ -5,11 +5,14 @@
 
 *ngIf="paintingOn"
 [paintingToggle]="paintingOn"
-(delete)='deleteQuote($event,i)' >
+(delete)='deleteQuote($event,i)'
+(createPoint)='createPoint($event,i)'
+[brushColor]="brushColor">
 
 </app-drawing-canvas>
 
-<mat-sidenav-container [hasBackdrop]="false" style="z-index: 1050;  position: absolute;
+<mat-sidenav-container [hasBackdrop]="false"
+style="z-index: 998;  position: absolute;
 top: 0;
 bottom: 0;
 left: 0;
@@ -113,10 +116,10 @@ right: 0;">
       <div style="padding-top: 10px; padding-right: 20px;display: inline-block;">
         <ol style="list-style: none;">
           <!-- PAINTING TOGGLE MUST BE THE VERY TOP OBJECT -->
-          <mat-slide-toggle color="accent"
+          <mat-slide-toggle #paintingToggle color="accent"
           style="z-index:999999;color:green;"
           style="transform: scale(2); margin-left: 74px;"
-          (toggleChange)="paintingToggle()"
+          (toggleChange)="paintToggleChange()"
           [checked] = "paintingChecked"
           [disabled] = "paintingSwitchDisabled">
         </mat-slide-toggle>
