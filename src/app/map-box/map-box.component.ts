@@ -886,10 +886,11 @@ loadingTimed():void {
       accessToken: mapboxgl.accessToken,
       unit: 'metric',
       profile: 'mapbox/walking',
-      alternatives: false,
+      alternatives: true,
       geometries: 'geojson',
-      controls: { instructions: false },
-      flyTo: false
+      controls: { inputs:true, instructions: true, profileSwitcher:false },
+      flyTo: false,
+      language: 'fi',
       });
 
       this.map.addControl(directions, "bottom-right");
@@ -1769,9 +1770,15 @@ routeFunction(req) {
   // console.log(Math.ceil(Math.round(data.distance)/5)*5);
   // Math.ceil(Math.round(data.distance)/5)*5: 930
 
+  console.log(data.distance);
   this.distance = Math.ceil(Math.round(data.distance)/5)*5;
 
+  console.log(Math.round(data.distance)/5);
+  console.log(Math.ceil(Math.round(data.distance)/5)*5);
+
   this.distanceToRoskis = this.distance.toString();
+  console.log('this.distance');
+  console.log(this.distance);
 
   if (this.distance > 2500) {
     // console.log(this.distanceToRoskis);
