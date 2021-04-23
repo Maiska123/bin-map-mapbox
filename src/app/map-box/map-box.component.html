@@ -67,18 +67,27 @@ right: 0;">
   z-index: 999;
   visibility: visible;
   top: 24vh;    background: black;">
-    <div class="container" style="min-width: 220px;    max-width: 296px;">
-      <div style="padding-top: 10px; padding-right: 20px;display: inline-block;">
+    <div class="container" style="min-width: 220px;width: max-content;"> <!-- max-width: 296px; -->
+
+      <div style="padding-top: 10px; padding-right: 20px;display: inline-block;     max-height: 60vh;
+      overflow-y: scroll;    width: -webkit-fill-available;">
         <ol style="list-style: none;">
+          <li class="menu-item">
+            <button class="btn btn-warning" style="min-width: 190px;" (click)="getDirectionsWaypoints()">Get Directions Waypoints</button>
+          </li>
           <li class="menu-item">
             <button class="btn btn-success" [disabled]="waypoints.length < 1" style="min-width: 190px;" (click)="applyWaypoints()">Get Route With Waypoints</button>
           </li>
           <li class="menu-item">
             <button style="min-width: 190px;" class="btn btn-warning" (click)="flyToUser()">Back To User</button>
           </li>
-          <li style="max-width: 230px;" class="menu-item" *ngFor="let waypoint of waypoints; index as i" >
+          <li style="max-width: 230px;
+          background-color: rgba(255,255,255,0.14);
+          margin-bottom: 10px;
+          border-radius: 25px;" class="menu-item" *ngFor="let waypoint of waypoints; index as i" >
             <button style="max-width: 60px; margin-left: 5px !important;margin-right: 5px !important;" class="btn btn-success" (click)="getToWaypoint(i)">Get To waypoint</button>
             <button style="max-width: 60px; margin-left: 5px !important;margin-right: 5px !important;" class="btn btn-danger" (click)="deleteWaypoint(i)">Delete Waypoint</button>
+            <button class="btn btn-info" style="min-width: 50px;" (click)="addWaypoint(i)">Add Waypoint to directions</button>
           </li>
           <!-- <li class="menu-item">
             <button class="btn btn-warning" (click)="flyToUser()">Back To User</button>

@@ -5,7 +5,7 @@ import { MapService } from './../map.service';
 import { Component, ElementRef, Input, OnInit, Output, QueryList, SimpleChanges, ViewChild, ViewChildren } from '@angular/core';
 import * as mapboxgl from 'mapbox-gl';
 import { GeoJson, FeatureCollection } from '../map';
-import { Observable, pipe } from 'rxjs'
+import { Observable, pipe, Subscription } from 'rxjs'
 import { environment } from '../../environments/environment';
 import {OverlayModule} from '@angular/cdk/overlay';
 import { AngularFireList } from '@angular/fire/database';
@@ -31,7 +31,7 @@ import { geojsonType } from '@turf/turf';
 export class MapBoxComponent implements OnInit{
   MapboxDirections = window.MapboxDirections;
   /// default settings
-
+  directions;
   // lisää ominaisuus että reitti jonka varrelta poimii roskikset
   // voisi esim- näyttää vain ne kun reitti-navigointi on päällä
 
@@ -351,14 +351,17 @@ export class MapBoxComponent implements OnInit{
   @ViewChildren("count") count: QueryList<any>;
   @Output("digit") digit: number = 0;
   @Output("duration") duration: number = 1000;
-  @Output("hideDistance") hideDistance: boolean = true;
+  @Output("hideDistance") hideDistance: boolean = false;
   @Output("burgertime") burgertime: boolean = true;
   @Output("burgertime2") burgertime2: boolean = true;
   @Output("burgertime3") burgertime3: boolean = true;
   clicked: any;
 
+  private subscription: Subscription;
+
   constructor(private mapService: MapService,
               private elRef: ElementRef) {
+    this.subscription = new Subscription;
   //   mapService.itemValue.subscribe((nextValue) => {
   //     alert(nextValue);  // this will happen on every change
   //     this.markers = this.mapService.getMarkers();
@@ -539,11 +542,12 @@ loadingTimed():void {
       // this.flyToBinChecked = !this.flyToBinChecked
       // ;
 
-
-    this.mapService.getLocation().subscribe(rep => {
-      // do something with Rep, Rep will have the data you desire.
-      this.flyToUserService(rep);
-   });
+    this.subscription.add(
+      this.mapService.getLocation().subscribe(rep => {
+        // do something with Rep, Rep will have the data you desire.
+        this.flyToUserService(rep);
+      })
+    );
 
     this.initializeMap()
 
@@ -764,16 +768,19 @@ loadingTimed():void {
     this.burgermenu2 = Array.from(document.getElementsByClassName('burgermenu2') as HTMLCollectionOf<HTMLElement>);
     this.burgermenu3 = Array.from(document.getElementsByClassName('burgermenu3') as HTMLCollectionOf<HTMLElement>);
 
-    this.sidenav.openedChange.subscribe(() => {this.burgertime = !this.burgertime,
-      !this.burgertime ? (
-        this.burgermenu2[0].style.transform = 'translateX(-100px)',
-        this.burgermenu3[0].style.transform = 'translateX(-100px)',
-        this.burgermenu1[0].style.zIndex = '100'
-       ) : (
-        this.burgermenu2[0].style.transform = 'translateX(0px)',
-        this.burgermenu3[0].style.transform = 'translateX(0px)',
-        this.burgermenu1[0].style.zIndex = '2')});
+    this.subscription.add(
+      this.sidenav.openedChange.subscribe(() => {this.burgertime = !this.burgertime,
+        !this.burgertime ? (
+          this.burgermenu2[0].style.transform = 'translateX(-100px)',
+          this.burgermenu3[0].style.transform = 'translateX(-100px)',
+          this.burgermenu1[0].style.zIndex = '100'
+        ) : (
+          this.burgermenu2[0].style.transform = 'translateX(0px)',
+          this.burgermenu3[0].style.transform = 'translateX(0px)',
+          this.burgermenu1[0].style.zIndex = '2')})
+    )
 
+    this.subscription.add(
     this.sidenav1.openedChange.subscribe(() => {this.burgertime2 = !this.burgertime2,
       !this.burgertime2 ? (
         this.burgermenu1[0].style.transform = 'translateX(-100px)',
@@ -782,8 +789,10 @@ loadingTimed():void {
         ) : (
           this.burgermenu1[0].style.transform = 'translateX(0px)',
           this.burgermenu3[0].style.transform = 'translateX(0px)',
-          this.burgermenu2[0].style.zIndex = '2')});
+          this.burgermenu2[0].style.zIndex = '2')})
+    )
 
+    this.subscription.add(
     this.sidenav2.openedChange.subscribe(() => {this.burgertime3 = !this.burgertime3,
         !this.burgertime3 ? (
           this.burgermenu1[0].style.transform = 'translateX(-100px)',
@@ -792,14 +801,15 @@ loadingTimed():void {
           ) : (
           this.burgermenu1[0].style.transform = 'translateX(0px)',
           this.burgermenu2[0].style.transform = 'translateX(0px)',
-          this.burgermenu3[0].style.zIndex = '2')});
+          this.burgermenu3[0].style.zIndex = '2')})
+    )
 
 
     //Called after ngAfterContentInit when the component's view has been initialized. Applies to components only.
     //Add 'implements AfterViewInit' to the class.
     // find these and hide
-// class="mapboxgl-ctrl mapboxgl-ctrl-attrib"
-// class="mapboxgl-ctrl-bottom-left"
+    // class="mapboxgl-ctrl mapboxgl-ctrl-attrib"
+    // class="mapboxgl-ctrl-bottom-left"
 
     var stuff1 = Array.from(document.getElementsByClassName('mapboxgl-ctrl-attrib') as HTMLCollectionOf<HTMLElement>);
     var stuff2 = Array.from(document.getElementsByClassName('mapboxgl-ctrl-bottom-left') as HTMLCollectionOf<HTMLElement>);
@@ -837,6 +847,14 @@ loadingTimed():void {
 
     this.animateCount();
     // this.rotateCamera(0);
+    this.directions
+  }
+
+  ngOnDestroy(): void {
+    //Called once, before the instance is destroyed.
+    //Add 'implements OnDestroy' to the class.
+
+    this.subscription.unsubscribe();
   }
 
 
@@ -882,7 +900,7 @@ loadingTimed():void {
 
     this.map.addControl(Draw);
 
-    var directions = new this.MapboxDirections({
+    this.directions = new this.MapboxDirections({
       accessToken: mapboxgl.accessToken,
       unit: 'metric',
       profile: 'mapbox/walking',
@@ -890,10 +908,10 @@ loadingTimed():void {
       geometries: 'geojson',
       controls: { inputs:true, instructions: true, profileSwitcher:false },
       flyTo: false,
-      language: 'fi',
+      language: 'fi'
       });
 
-      this.map.addControl(directions, "bottom-right");
+      this.map.addControl(this.directions, "bottom-right");
 
     //// Add Marker on Click -- ONCLICK ADD MARKER
     // this.map.on('click', (event) => {
@@ -1457,6 +1475,16 @@ loadingTimed():void {
     this.waypoints.splice(i,1);
   }
 
+  addWaypoint(i:number){
+    var waypointArray: string[] = this.waypoints[i].split(',');
+
+    var waypointNumber = [Number.parseFloat(waypointArray[0]),Number.parseFloat(waypointArray[1])];
+      this.directions.addWaypoint(1,waypointNumber);
+  }
+
+  getDirectionsWaypoints(){
+    console.table(this.directions.getWaypoints())
+  }
 
   confirmTimeout(){
 
