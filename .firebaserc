@@ -1,9 +1,9 @@
 {
   "targets": {
-    "***REMOVED***": {
+    "bin-map-mapbox": {
       "hosting": {
-        "***REMOVED***": [
-          "***REMOVED***"
+        "bin-map-mapbox": [
+          "bin-map-mapbox"
         ]
       }
     }
