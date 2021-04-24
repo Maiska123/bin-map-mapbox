@@ -18,6 +18,7 @@ import * as MapboxDraw from "@mapbox/mapbox-gl-draw";
 // import * as MapboxDirections from 'mapbox-gl-directions'
 // import 'mapbox-gl-directions/dist/mapbox-gl-directions.css'
 import * as FreehandMode from 'mapbox-gl-draw-freehand-mode';
+import * as MapboxDirections from '@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions';
 import { MatSlideToggle } from '@angular/material/slide-toggle';
 import { geojsonType } from '@turf/turf';
 //import * as proj4 from "proj4";
@@ -29,7 +30,8 @@ import { geojsonType } from '@turf/turf';
 })
 
 export class MapBoxComponent implements OnInit{
-  MapboxDirections = window.MapboxDirections;
+  // MapboxDirections = window.MapboxDirections;
+  MapboxDirections = MapboxDirections;
   /// default settings
   directions;
   // lisää ominaisuus että reitti jonka varrelta poimii roskikset
@@ -815,8 +817,17 @@ loadingTimed():void {
     var stuff2 = Array.from(document.getElementsByClassName('mapboxgl-ctrl-bottom-left') as HTMLCollectionOf<HTMLElement>);
     var stuff3 = Array.from(document.getElementsByClassName('mapboxgl-ctrl-top-right') as HTMLCollectionOf<HTMLElement>);
     var stuff4 = Array.from(document.getElementsByClassName('mat-drawer-inner-container') as HTMLCollectionOf<HTMLElement>);
+    var stuff5 = Array.from(document.getElementsByClassName('mapboxgl-ctrl-directions mapboxgl-ctrl') as HTMLCollectionOf<HTMLElement>);
     // var stuff6 = Array.from(document.getElementsByClassName('mat-drawer-inner-container') as HTMLCollectionOf<HTMLElement>);
-
+    // console.log(stuff5)
+    stuff5.forEach((elem)=>{
+    elem.style.visibility = "hidden";
+    elem.style.transform = 'translateX(400px);';
+    elem.style.transition = 'all 0.5s ease-in-out;';
+    })
+    // stuff5[0].style.transform = 'translateX(400px);';
+    // stuff5[0].style.right = '-300px';
+    // stuff5[0].style.transition = 'all 0.5s ease-in-out;';
 
     // var stuff5 = document.getElementById('hamburger');
 
@@ -878,6 +889,7 @@ loadingTimed():void {
 
   buildMap() {
     this.map = new mapboxgl.Map({
+      accessToken: environment.mapbox.accessToken,
       container: 'map',
       style: this.style,
       zoom: 16,
@@ -892,26 +904,27 @@ loadingTimed():void {
     /// Add map controls
     this.map.addControl(new mapboxgl.NavigationControl());
 
-    const Draw = new MapboxDraw({
-      modes: Object.assign(MapboxDraw.modes, {
-        draw_polygon: FreehandMode
-      })
-    });
+    // const Draw = new MapboxDraw({
+    //   modes: Object.assign(MapboxDraw.modes, {
+    //     draw_polygon: FreehandMode
+    //   })
+    // });
 
-    this.map.addControl(Draw);
+    // this.map.addControl(Draw);
 
-    this.directions = new this.MapboxDirections({
-      accessToken: mapboxgl.accessToken,
-      unit: 'metric',
-      profile: 'mapbox/walking',
-      alternatives: true,
-      geometries: 'geojson',
-      controls: { inputs:true, instructions: true, profileSwitcher:false },
-      flyTo: false,
-      language: 'fi'
-      });
+    // MAPBOX NAVIGATION CONTROLS
+    // this.directions = new this.MapboxDirections({
+    //   accessToken: environment.mapbox.accessToken,
+    //   unit: 'metric',
+    //   profile: 'mapbox/walking',
+    //   alternatives: true,
+    //   geometries: 'geojson',
+    //   controls: { inputs:true, instructions: true, profileSwitcher:false },
+    //   flyTo: false,
+    //   language: 'fi'
+    //   });
 
-      this.map.addControl(this.directions, "bottom-right");
+    //   this.map.addControl(this.directions, "bottom-right");
 
     //// Add Marker on Click -- ONCLICK ADD MARKER
     // this.map.on('click', (event) => {
@@ -922,22 +935,23 @@ loadingTimed():void {
     // })
 
 
-    this.map.on('mousedown', (e) => {
+    // MAPBOX ON MOUSEDOWN
+    // this.map.on('mousedown', (e) => {
 
-      //this.clicked = !this.clicked;
+    //   //this.clicked = !this.clicked;
 
-      const routeBtn = document.createElement('div');
+    //   const routeBtn = document.createElement('div');
 
-      routeBtn.style.position= 'fixed';
-      routeBtn.style.top= '50%';
-      routeBtn.style.left= '50%';
-      routeBtn.style.zIndex= '1000';
+    //   routeBtn.style.position= 'fixed';
+    //   routeBtn.style.top= '50%';
+    //   routeBtn.style.left= '50%';
+    //   routeBtn.style.zIndex= '1000';
 
-      routeBtn.innerHTML = `<button class="btn btn-success btn-simple text-white">I am a Button</button>`;
+    //   routeBtn.innerHTML = `<button class="btn btn-success btn-simple text-white">I am a Button</button>`;
 
-      // this.mapdiv.nativeElement.innerHTML = `<button class="btn btn-success btn-simple text-white" >Get Route</button>`;
-      this.mapdiv.nativeElement.appendChild(routeBtn);
-    });
+    //   // this.mapdiv.nativeElement.innerHTML = `<button class="btn btn-success btn-simple text-white" >Get Route</button>`;
+    //   this.mapdiv.nativeElement.appendChild(routeBtn);
+    // });
 
 
     //// Add Marker on Click -- ONCLICK GET ROUTE
@@ -1167,12 +1181,14 @@ loadingTimed():void {
 
 
       this.map.touchZoomRotate.enable();
-      this.map.dragPan.enable({
-        linearity: 0.3, // eslint-disable-line no-use-before-define
-        // easing: bezier(0, 0, 0.3, 1), // eslint-disable-line no-use-before-define
-        maxSpeed: 2000, // eslint-disable-line no-use-before-define
-        deceleration: 1500, // eslint-disable-line no-use-before-define
-        }); // eslint-disable-line no-use-before-define
+      this.map.dragPan.enable(
+        // {
+        // // linearity: 0.3, // eslint-disable-line no-use-before-define
+        // // easing: bezier(0, 0, 0.3, 1), // eslint-disable-line no-use-before-define
+        // // maxSpeed: 2000, // eslint-disable-line no-use-before-define
+        // // deceleration: 1500, // eslint-disable-line no-use-before-define
+        // }
+        ); // eslint-disable-line no-use-before-define
         this.map.keyboard.enable();
 
         var noLocalData:boolean = localStorage.getItem('markers') == null;
@@ -1412,7 +1428,7 @@ loadingTimed():void {
   flyTo(data: GeoJson) {
     this.cameraRotate = !this.cameraRotate;
     this.map.flyTo({
-      center: data.geometry.coordinates, // eslint-disable-line no-use-before-define
+      center: (data.geometry.coordinates as mapboxgl.LngLatLike), // eslint-disable-line no-use-before-define
       zoom: 17
     })
   }
@@ -1420,7 +1436,7 @@ loadingTimed():void {
   flyToCoords(coords: any[]) {
     this.cameraRotate = !this.cameraRotate;
     this.map.flyTo({
-      center: coords, // eslint-disable-line no-use-before-define
+      center: (coords as mapboxgl.LngLatLike), // eslint-disable-line no-use-before-define
       zoom: 17
     })
   }
@@ -1818,18 +1834,45 @@ routeFunction(req) {
   this.digit = Math.round(Number.parseInt(this.distanceToRoskis));
 
   var route = data.geometry.coordinates;
-  var geojson = {
-    type: 'Feature',
-    properties: {},
-    geometry: {
-      type: 'LineString',
+  // var geojson:GeoJson = {
+  //   type: 'Feature',
+  //   properties: {},
+  //   geometry: {
+  //     type: 'LineString',
+  //     coordinates: route
+  //   }
+  // };
+  const geojsonFeature = {
+    type: 'Feature' as const,
+    properties: {
+      name: 'route',
+      amenity: 'Custom Route',
+      popupContent: 'Route'
+    },
+      geometry: {
+      type: 'LineString' as const,
       coordinates: route
     }
-  };
+  }
+  // FeatureCollection<Geometry, { [name: string]: any; }>
+  // var geojson:GeoJson= {
+  //   type: "FeatureCollection",
+  //   features: [{
+  //       type: "Feature",
+  //       properties: {},
+  //     },
+  //     {
+  //       geometry: {
+  //         type: 'LineString',
+  //         coordinates: route
+  //       }
+  //     }],
+  // };
 
   // if the route already exists on the map, reset it using setData
   if (this.map.getSource('route')) {
-    this.map.getSource('route').setData(geojson); // eslint-disable-line no-use-before-define
+    const source: mapboxgl.GeoJSONSource = this.map.getSource('route') as mapboxgl.GeoJSONSource;
+    source.setData(geojsonFeature); // eslint-disable-line no-use-before-define
   } else { // otherwise, make a new request
     this.map.addLayer({
       id: 'route',
@@ -1841,7 +1884,7 @@ routeFunction(req) {
           properties: {},
           geometry: {
             type: 'LineString',
-            coordinates: geojson // eslint-disable-line no-use-before-define
+            coordinates: route // eslint-disable-line no-use-before-define
           }
         }
       },
