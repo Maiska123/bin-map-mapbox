@@ -28,7 +28,7 @@ export class MapService {
 
   constructor(private db: AngularFireDatabase
               /*public app: FirebaseApp*/) {
-    mapboxgl.accessToken= environment.mapbox.accessToken;
+    // mapboxgl.accessToken= environment.mapbox.accessToken;
       //firebase.initializeApp(environment.firebaseConfig)
   //const firestore = app.firestore();
 

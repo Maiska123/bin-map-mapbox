@@ -1,12 +1,11 @@
 import { Component, ElementRef, Input, OnInit, SimpleChanges, ViewChild } from '@angular/core';
 
 @Component({
-  selector: 'app-drawing-menu',
-  templateUrl: './drawing-menu.component.html',
-  styleUrls: ['./drawing-menu.component.scss']
+  selector: 'app-painting-menu',
+  templateUrl: './painting-menu.component.html',
+  styleUrls: ['./painting-menu.component.scss']
 })
-export class DrawingMenuComponent implements OnInit {
-
+export class PaintingMenuComponent implements OnInit {
   constructor() { }
 
   @ViewChild("hamburger") hamburger: ElementRef;

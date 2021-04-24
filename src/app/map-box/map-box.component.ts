@@ -1,16 +1,26 @@
+import { DrawingCanvasComponent } from './drawing-canvas/drawing-canvas.component';
 import { Coordinate } from './../utils/interfaces';
 
 import { MapService } from './../map.service';
 import { Component, ElementRef, Input, OnInit, Output, QueryList, SimpleChanges, ViewChild, ViewChildren } from '@angular/core';
 import * as mapboxgl from 'mapbox-gl';
 import { GeoJson, FeatureCollection } from '../map';
-import { Observable, pipe } from 'rxjs'
+import { Observable, pipe, Subscription } from 'rxjs'
 import { environment } from '../../environments/environment';
 import {OverlayModule} from '@angular/cdk/overlay';
 import { AngularFireList } from '@angular/fire/database';
 import Swal from 'sweetalert2';
 import { MatSidenav } from '@angular/material/sidenav';
 import { FormControl } from '@angular/forms';
+import * as turf from '@turf/turf';
+import * as MapboxDraw from "@mapbox/mapbox-gl-draw";
+// import * as MapboxDirections from "@mapbox/mapbox-gl-direction";
+// import * as MapboxDirections from 'mapbox-gl-directions'
+// import 'mapbox-gl-directions/dist/mapbox-gl-directions.css'
+import * as FreehandMode from 'mapbox-gl-draw-freehand-mode';
+import * as MapboxDirections from '@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions';
+import { MatSlideToggle } from '@angular/material/slide-toggle';
+import { geojsonType } from '@turf/turf';
 //import * as proj4 from "proj4";
 
 @Component({
@@ -20,17 +30,36 @@ import { FormControl } from '@angular/forms';
 })
 
 export class MapBoxComponent implements OnInit{
-
+  // MapboxDirections = window.MapboxDirections;
+  MapboxDirections = MapboxDirections;
   /// default settings
-
+  directions;
   // lisää ominaisuus että reitti jonka varrelta poimii roskikset
   // voisi esim- näyttää vain ne kun reitti-navigointi on päällä
+
+
+  /* poimii roskikset, näyttää vain ne */
+
+  // - tämä toimisi vallan mainiosti kyllä
+  // - t
+
+  /* reitti-navigointi */
+
+  // - Aito "Navigointi" Vie rutkasti akkua...
+  // - ...mutta sitten jos sitä käyttäjän sijaintia pollataa vaa vähä väliä nii.
+
   @ViewChild('sidenav') sidenav: MatSidenav;
   @ViewChild('sidenav1') sidenav1: MatSidenav;
+  @ViewChild('sidenav2') sidenav2: MatSidenav;
+  @ViewChild('paintingToggle') paintToggle: MatSlideToggle;
   // @Input() checked: boolean;
   // @ViewChild('sidenav') public sidenav: MdSidenav;
   public map: mapboxgl.Map;
   toogle = new FormControl('', []);
+  i:any;
+
+  turf: any;
+  brushColor: string = '#000000';
 
   style = 'mapbox://styles/maiska/ckn5ni6gd0q1a17oykioohezf/draft';
   lat = 61.498643;
@@ -44,6 +73,212 @@ export class MapBoxComponent implements OnInit{
   roskisData: any[] = [];
   roskisCoordData: any[] = [];
   @Output('destination') destination: string = '';
+
+  geojsonPaint: GeoJSON.FeatureCollection<any> = {
+      type: 'FeatureCollection',
+      features: [
+        {
+          type: 'Feature',
+          geometry: {
+            type: 'LineString',
+            coordinates: []
+          },
+          properties: {}
+        }
+      ]
+    };
+
+  geojson = {
+      "name":"NewFeatureType",
+      "type":"FeatureCollection",
+      "features":[{
+          "type":"Feature",
+          "geometry":{
+              "type":"LineString",
+              "coordinates":[]
+          },
+          "properties":null
+      }]
+  };
+// then you do pushing into coordinates array
+
+
+  paintingChecked:boolean = false;
+
+  // (toggleChange)="paintingToggle()"
+  // [checked] = "paintingChecked"
+  // [disabled] = "paintingSwitchDisabled"
+  // "deletePainting()"
+
+  paintingSwitchDisabled:boolean = false;
+  paintingOn:boolean = false;
+  paintCoords: any[] = [];
+  eventData: any;
+
+  createPoint(event:any,i:any) {
+    var x,y;
+    this.eventData = event;
+    x = event.pageX, y = event.pageY;
+    console.log('x: '+x +' ' + 'y: '+ y);
+    // this.map.on('click', (event) => {
+    //   const coordinates = [event.lngLat.lng, event.lngLat.lat]
+    // this.map.fire('click', (event));
+    //this.eventFire(document.getElementById('map'), 'click');
+
+    // this.map.queryRenderedFeatures();
+
+  //   document.getElementById('map')
+  // .dispatchEvent(new MouseEvent('click', { screenX: x, screenY: y }))
+  this.simulatedClick(document.getElementsByClassName('mapboxgl-canvas')[0],{clientX:x,clientY:y})
+  // this.simulatedClick(document.getElementById('map'))
+  // this.map.fire('foo');
+
+  }
+
+  simulatedClick(target, options?) {
+    // console.log('this.simulatedClick');
+    var event = target.ownerDocument.createEvent('MouseEvents'),
+        options = options || {},
+        opts = { // These are the default values, set up for un-modified left clicks
+          type: 'click',
+          canBubble: true,
+          cancelable: true,
+          view: target.ownerDocument.defaultView,
+          detail: 1,
+          screenX: 0, //The coordinates within the entire page
+          screenY: 0,
+          clientX: 0, //The coordinates within the viewport
+          clientY: 0,
+          ctrlKey: false,
+          altKey: false,
+          shiftKey: false,
+          metaKey: false, //I *think* 'meta' is 'Cmd/Apple' on Mac, and 'Windows key' on Win. Not sure, though!
+          button: 0, //0 = left, 1 = middle, 2 = right
+          relatedTarget: null,
+        };
+
+    //Merge the options with the defaults
+    for (var key in options) {
+      if (options.hasOwnProperty(key)) {
+        opts[key] = options[key];
+      }
+    }
+
+    //Pass in the options
+    event.initMouseEvent(
+        opts.type,
+        opts.canBubble,
+        opts.cancelable,
+        opts.view,
+        opts.detail,
+        opts.screenX,
+        opts.screenY,
+        opts.clientX,
+        opts.clientY,
+        opts.ctrlKey,
+        opts.altKey,
+        opts.shiftKey,
+        opts.metaKey,
+        opts.button,
+        opts.relatedTarget
+    );
+
+    //Fire the event
+    target.dispatchEvent(event);
+  }
+
+
+  eventFire(el, etype){
+    if (el.fireEvent) {
+      el.fireEvent('on' + etype);
+    } else {
+      var evObj = document.createEvent('Events');
+      evObj.initEvent(etype, true, false);
+      el.dispatchEvent(evObj);
+    }
+  }
+
+
+
+  deleteQuote(event:any,i:any) {
+    this.paintToggle.toggle();
+    this.paintingOn = false;
+
+
+    if (this.map.getLayer('canvas-layer')){
+      this.map.removeLayer('canvas-layer');
+      this.map.removeSource('canvas-source');
+    }
+    var bounds: any[][] = this.map.getBounds().toArray();
+
+    console.log(bounds);
+    var boundsArray: any[] =
+    [ [ bounds[0][0], bounds[1][1] ],
+      [ bounds[1][0], bounds[1][1] ],
+      [ bounds[1][0], bounds[0][1] ],
+      [ bounds[0][0], bounds[0][1] ]
+    ];
+
+      this.map.addSource('canvas-source', {
+      type: 'canvas',
+      canvas: 'canvasID',
+      coordinates: boundsArray,
+        // [91.4461, 21.5006],
+        // [100.3541, 21.5006],
+        // [100.3541, 13.9706],
+        // [91.4461, 13.9706]
+
+        // Set to true if the canvas source is animated. If the canvas is static, animate should be set to false to improve performance.
+
+      animate: true
+      });
+
+      this.map.addLayer({
+        id: 'canvas-layer',
+        type: 'raster',
+        source: 'canvas-source'
+        });
+
+
+    this.createGeoJSONLine(this.geojson);
+    // array is full of coords from last run, lets purge them before next event is fired.
+    this.paintCoords = [];
+  }
+
+  changeBrushColor(color: string){
+    this.brushColor = color;
+  }
+
+
+  paintToggleChange(){
+    // kun mahdollisesti löytyy jo jokin piirros kartalta
+    // vaihdetaan pensselin väriä että erottuisi
+    // edellisestä taideteoksesta
+    var max = 255;
+    var min = 0;
+
+    var R = ((Math.random() * (max - min + 1) ) << 0);
+    var G = ((Math.random() * (max - min + 1) ) << 0);
+    var B = ((Math.random() * (max - min + 1) ) << 0);
+
+
+    (this.map.getLayer('canvas-layer')) ?
+    this.changeBrushColor(`rgba(${R},${G},${B},1)`):
+    this.changeBrushColor("rgba(0,0,0,1)");
+
+     this.paintingOn = !this.paintingOn;
+    console.log('paintingOn'+this.paintingOn);
+    console.log('paintingChecked'+this.paintingChecked);
+    console.log('paintingSwitchDisabled'+this.paintingSwitchDisabled);
+  }
+
+
+  deletePainting(){
+    if (this.map.getLayer('canvas-layer')){
+      this.map.removeLayer('canvas-layer');
+      this.map.removeSource('canvas-source');
+    }
+  }
 
   @ViewChild("animatedDigit") animatedDigit: ElementRef;
   @ViewChild("mapdiv") mapdiv: ElementRef;
@@ -84,6 +319,7 @@ export class MapBoxComponent implements OnInit{
   isOpen = true;
   burgermenu1: any;
   burgermenu2: any;
+  burgermenu3: any;
 
   roskisUrl = 'https://geodata.tampere.fi/geoserver/maankaytto/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=maankaytto:WFS_ROSKIS&outputFormat=json'
 
@@ -113,17 +349,21 @@ export class MapBoxComponent implements OnInit{
 
   nums: Array<number> = [25, 76, 48];
 
-  @ViewChild("oneItem") oneItem: any;
+  @ViewChild("oneItem") oneItem: ElementRef;
   @ViewChildren("count") count: QueryList<any>;
   @Output("digit") digit: number = 0;
   @Output("duration") duration: number = 1000;
-  @Output("hideDistance") hideDistance: boolean = true;
+  @Output("hideDistance") hideDistance: boolean = false;
   @Output("burgertime") burgertime: boolean = true;
   @Output("burgertime2") burgertime2: boolean = true;
+  @Output("burgertime3") burgertime3: boolean = true;
   clicked: any;
+
+  private subscription: Subscription;
 
   constructor(private mapService: MapService,
               private elRef: ElementRef) {
+    this.subscription = new Subscription;
   //   mapService.itemValue.subscribe((nextValue) => {
   //     alert(nextValue);  // this will happen on every change
   //     this.markers = this.mapService.getMarkers();
@@ -176,6 +416,20 @@ burgerTime2() {
   // } else {this.burgermenu1[0].style.visibility = 'hidden'}
   // this.burgertime = !this.burgertime;
   this.sidenav1.toggle();
+}
+
+burgerTime3() {
+
+  // if (!this.burgertime){
+  //   this.burgermenu2[0].style.transform = 'translateX(0px)';
+  // } else if (!this.burgertime)
+  // {this.burgermenu2[0].style.transform = 'translateX(100px)'}
+
+  // if (this.burgermenu1[0].style.visibility == 'hidden'){
+  //   this.burgermenu1[0].style.visibility = 'visible'
+  // } else {this.burgermenu1[0].style.visibility = 'hidden'}
+  // this.burgertime = !this.burgertime;
+  this.sidenav2.toggle();
 }
 
 // Via Promise
@@ -290,11 +544,12 @@ loadingTimed():void {
       // this.flyToBinChecked = !this.flyToBinChecked
       // ;
 
-
-    this.mapService.getLocation().subscribe(rep => {
-      // do something with Rep, Rep will have the data you desire.
-      this.flyToUserService(rep);
-   });
+    this.subscription.add(
+      this.mapService.getLocation().subscribe(rep => {
+        // do something with Rep, Rep will have the data you desire.
+        this.flyToUserService(rep);
+      })
+    );
 
     this.initializeMap()
 
@@ -502,27 +757,77 @@ loadingTimed():void {
 
   ngAfterViewInit(): void {
 
+    // const Draw = new MapboxDraw({
+    //   modes: Object.assign(MapboxDraw.modes, {
+    //     draw_polygon: FreehandMode
+    //   })
+    // });
+
+    // this.map.addControl(Draw);
+
+
     this.burgermenu1 = Array.from(document.getElementsByClassName('burgermenu1') as HTMLCollectionOf<HTMLElement>);
     this.burgermenu2 = Array.from(document.getElementsByClassName('burgermenu2') as HTMLCollectionOf<HTMLElement>);
+    this.burgermenu3 = Array.from(document.getElementsByClassName('burgermenu3') as HTMLCollectionOf<HTMLElement>);
 
-    this.sidenav.openedChange.subscribe(() => {this.burgertime = !this.burgertime,
-      !this.burgertime ? (this.burgermenu2[0].style.transform = 'translateX(-100px)', this.burgermenu1[0].style.zIndex = '100') : (this.burgermenu2[0].style.transform = 'translateX(0px)',this.burgermenu1[0].style.zIndex = '2')});
+    this.subscription.add(
+      this.sidenav.openedChange.subscribe(() => {this.burgertime = !this.burgertime,
+        !this.burgertime ? (
+          this.burgermenu2[0].style.transform = 'translateX(-100px)',
+          this.burgermenu3[0].style.transform = 'translateX(-100px)',
+          this.burgermenu1[0].style.zIndex = '100'
+        ) : (
+          this.burgermenu2[0].style.transform = 'translateX(0px)',
+          this.burgermenu3[0].style.transform = 'translateX(0px)',
+          this.burgermenu1[0].style.zIndex = '2')})
+    )
+
+    this.subscription.add(
     this.sidenav1.openedChange.subscribe(() => {this.burgertime2 = !this.burgertime2,
-      !this.burgertime2 ? (this.burgermenu1[0].style.transform = 'translateX(-100px)', this.burgermenu2[0].style.zIndex = '100') : (this.burgermenu1[0].style.transform = 'translateX(0px)',this.burgermenu2[0].style.zIndex = '2')});
+      !this.burgertime2 ? (
+        this.burgermenu1[0].style.transform = 'translateX(-100px)',
+        this.burgermenu3[0].style.transform = 'translateX(-100px)',
+        this.burgermenu2[0].style.zIndex = '100'
+        ) : (
+          this.burgermenu1[0].style.transform = 'translateX(0px)',
+          this.burgermenu3[0].style.transform = 'translateX(0px)',
+          this.burgermenu2[0].style.zIndex = '2')})
+    )
+
+    this.subscription.add(
+    this.sidenav2.openedChange.subscribe(() => {this.burgertime3 = !this.burgertime3,
+        !this.burgertime3 ? (
+          this.burgermenu1[0].style.transform = 'translateX(-100px)',
+          this.burgermenu2[0].style.transform = 'translateX(-100px)',
+          this.burgermenu3[0].style.zIndex = '100'
+          ) : (
+          this.burgermenu1[0].style.transform = 'translateX(0px)',
+          this.burgermenu2[0].style.transform = 'translateX(0px)',
+          this.burgermenu3[0].style.zIndex = '2')})
+    )
 
 
     //Called after ngAfterContentInit when the component's view has been initialized. Applies to components only.
     //Add 'implements AfterViewInit' to the class.
     // find these and hide
-// class="mapboxgl-ctrl mapboxgl-ctrl-attrib"
-// class="mapboxgl-ctrl-bottom-left"
+    // class="mapboxgl-ctrl mapboxgl-ctrl-attrib"
+    // class="mapboxgl-ctrl-bottom-left"
 
-    var stuff1 = Array.from(document.getElementsByClassName('mapboxgl-ctrl-bottom-right') as HTMLCollectionOf<HTMLElement>);
+    var stuff1 = Array.from(document.getElementsByClassName('mapboxgl-ctrl-attrib') as HTMLCollectionOf<HTMLElement>);
     var stuff2 = Array.from(document.getElementsByClassName('mapboxgl-ctrl-bottom-left') as HTMLCollectionOf<HTMLElement>);
     var stuff3 = Array.from(document.getElementsByClassName('mapboxgl-ctrl-top-right') as HTMLCollectionOf<HTMLElement>);
     var stuff4 = Array.from(document.getElementsByClassName('mat-drawer-inner-container') as HTMLCollectionOf<HTMLElement>);
+    var stuff5 = Array.from(document.getElementsByClassName('mapboxgl-ctrl-directions mapboxgl-ctrl') as HTMLCollectionOf<HTMLElement>);
     // var stuff6 = Array.from(document.getElementsByClassName('mat-drawer-inner-container') as HTMLCollectionOf<HTMLElement>);
-
+    // console.log(stuff5)
+    stuff5.forEach((elem)=>{
+    elem.style.visibility = "hidden";
+    elem.style.transform = 'translateX(400px);';
+    elem.style.transition = 'all 0.5s ease-in-out;';
+    })
+    // stuff5[0].style.transform = 'translateX(400px);';
+    // stuff5[0].style.right = '-300px';
+    // stuff5[0].style.transition = 'all 0.5s ease-in-out;';
 
     // var stuff5 = document.getElementById('hamburger');
 
@@ -536,7 +841,7 @@ loadingTimed():void {
       element.style.overflow = "visible";
     })
     stuff3[0].style.zIndex = '999';
-    stuff3[0].style.transform = 'scale(1.5) translate(-10px, 20px)';
+    stuff3[0].style.transform = 'scale(1.5) translate(-10px, 40px)';
     // stuff2[0].style.visibility = "hidden";
 
     // stuff5[0].style.margin = '10px 40px 10px 25px !important';
@@ -553,6 +858,14 @@ loadingTimed():void {
 
     this.animateCount();
     // this.rotateCamera(0);
+    this.directions
+  }
+
+  ngOnDestroy(): void {
+    //Called once, before the instance is destroyed.
+    //Add 'implements OnDestroy' to the class.
+
+    this.subscription.unsubscribe();
   }
 
 
@@ -576,11 +889,12 @@ loadingTimed():void {
 
   buildMap() {
     this.map = new mapboxgl.Map({
+      accessToken: environment.mapbox.accessToken,
       container: 'map',
       style: this.style,
       zoom: 16,
       maxZoom: 19,
-      minZoom: 14,
+      minZoom: 13,
       minPitch: 0,
       maxPitch: 67,
       center: [this.lng, this.lat]
@@ -590,6 +904,27 @@ loadingTimed():void {
     /// Add map controls
     this.map.addControl(new mapboxgl.NavigationControl());
 
+    // const Draw = new MapboxDraw({
+    //   modes: Object.assign(MapboxDraw.modes, {
+    //     draw_polygon: FreehandMode
+    //   })
+    // });
+
+    // this.map.addControl(Draw);
+
+    // MAPBOX NAVIGATION CONTROLS
+    // this.directions = new this.MapboxDirections({
+    //   accessToken: environment.mapbox.accessToken,
+    //   unit: 'metric',
+    //   profile: 'mapbox/walking',
+    //   alternatives: true,
+    //   geometries: 'geojson',
+    //   controls: { inputs:true, instructions: true, profileSwitcher:false },
+    //   flyTo: false,
+    //   language: 'fi'
+    //   });
+
+    //   this.map.addControl(this.directions, "bottom-right");
 
     //// Add Marker on Click -- ONCLICK ADD MARKER
     // this.map.on('click', (event) => {
@@ -600,28 +935,34 @@ loadingTimed():void {
     // })
 
 
-    this.map.on('mousedown', (e) => {
+    // MAPBOX ON MOUSEDOWN
+    // this.map.on('mousedown', (e) => {
 
-      //this.clicked = !this.clicked;
+    //   //this.clicked = !this.clicked;
 
-      const routeBtn = document.createElement('div');
+    //   const routeBtn = document.createElement('div');
 
-      routeBtn.style.position= 'fixed';
-      routeBtn.style.top= '50%';
-      routeBtn.style.left= '50%';
-      routeBtn.style.zIndex= '1000';
+    //   routeBtn.style.position= 'fixed';
+    //   routeBtn.style.top= '50%';
+    //   routeBtn.style.left= '50%';
+    //   routeBtn.style.zIndex= '1000';
 
-      routeBtn.innerHTML = `<button class="btn btn-success btn-simple text-white">I am a Button</button>`;
+    //   routeBtn.innerHTML = `<button class="btn btn-success btn-simple text-white">I am a Button</button>`;
 
-      // this.mapdiv.nativeElement.innerHTML = `<button class="btn btn-success btn-simple text-white" >Get Route</button>`;
-      this.mapdiv.nativeElement.appendChild(routeBtn);
-    });
+    //   // this.mapdiv.nativeElement.innerHTML = `<button class="btn btn-success btn-simple text-white" >Get Route</button>`;
+    //   this.mapdiv.nativeElement.appendChild(routeBtn);
+    // });
 
 
     //// Add Marker on Click -- ONCLICK GET ROUTE
     this.map.on('click', (event) => {
+      // console.log('this.map.on(click, (event)');
 
-
+      if (!this.paintingOn){
+      // var point = turf.point([23.84629822, 61.44356812]);
+      // var buffered = turf.buffer(point, 5, {units:'kilometers'});
+      // var bbox = turf.bbox(buffered);
+      // console.log(turf.bboxPolygon(bbox));
         // var features = this.map.queryRenderedFeatures(bbox, {
         // layers: ['counties']
         // });
@@ -644,7 +985,7 @@ loadingTimed():void {
       //console.log(newMarker)
 
       // set bbox as 5px reactangle area around clicked point
-      var bbox = [
+      var bboxClick = [
         // [event.point.x - 5, event.point.y - 5],
         // [event.point.x + 5, event.point.y + 5]
         [event.lngLat.lng - 0.0005, event.lngLat.lat - 0.0005],
@@ -654,13 +995,13 @@ loadingTimed():void {
       //console.log(bbox);
 
       var bboxCoord1: Coordinate = {
-        lon: bbox[0][0],
-        lat: bbox[0][1]
+        lon: bboxClick[0][0],
+        lat: bboxClick[0][1]
       }
 
       var bboxCoord2: Coordinate = {
-        lon: bbox[1][0],
-        lat: bbox[1][1]
+        lon: bboxClick[1][0],
+        lat: bboxClick[1][1]
       }
 
 
@@ -803,10 +1144,36 @@ loadingTimed():void {
         this.clicked = false;
       })
 
-
+      } // if !this.paintingOn END
+      else {
+        // const coordinates = [this.eventData.lngLat.lng, this.eventData.lngLat.lat]
+        const coordinates = [event.lngLat.lng, event.lngLat.lat];
+        this.paintCoords.push(coordinates);
+        // this.geojsonPaint.features[0].geometry.c
+        this.geojsonPaint.features[0].geometry.coordinates.push(coordinates);
+        console.log(this.paintCoords);
+        console.log('this.paintCoords');
+        console.log(this.geojsonPaint);
+      }
       //this.getRoute(coordinates);// mapService.createMarker(newMarker)
+      // console.log(event)
+
     })
 
+    // FOO EVENT
+    this.map.on('foo', (event) => {
+
+      //  fire event "mapboxgl-canvas"
+      console.log(event)
+      // {"x":581,"y":70}
+      //this.map.
+      const coordinates = [event.lngLat.lng, event.lngLat.lat];
+      this.paintCoords.push(coordinates);
+      // this.geojsonPaint.features[0].geometry.c
+      this.geojsonPaint.features[0].geometry.coordinates.push(coordinates);
+      console.log(this.paintCoords);
+
+    })
 
     /// Add realtime firebase data on map load
     this.map.on('load', (event) => {
@@ -814,12 +1181,14 @@ loadingTimed():void {
 
 
       this.map.touchZoomRotate.enable();
-      this.map.dragPan.enable({
-        linearity: 0.3, // eslint-disable-line no-use-before-define
-        // easing: bezier(0, 0, 0.3, 1), // eslint-disable-line no-use-before-define
-        maxSpeed: 2000, // eslint-disable-line no-use-before-define
-        deceleration: 1500, // eslint-disable-line no-use-before-define
-        }); // eslint-disable-line no-use-before-define
+      this.map.dragPan.enable(
+        // {
+        // // linearity: 0.3, // eslint-disable-line no-use-before-define
+        // // easing: bezier(0, 0, 0.3, 1), // eslint-disable-line no-use-before-define
+        // // maxSpeed: 2000, // eslint-disable-line no-use-before-define
+        // // deceleration: 1500, // eslint-disable-line no-use-before-define
+        // }
+        ); // eslint-disable-line no-use-before-define
         this.map.keyboard.enable();
 
         var noLocalData:boolean = localStorage.getItem('markers') == null;
@@ -936,7 +1305,7 @@ loadingTimed():void {
       // make an initial directions request that
       // starts and ends at the same location
       var start = [this.lng, this.lat];
-      this.getRoute(start);
+      //this.getRoute(start);
 
       // Add starting point to the map
       this.map.addLayer({
@@ -973,6 +1342,85 @@ loadingTimed():void {
 
   /// Helpers
 
+  createGeoJSONLine(coords?:any){
+    console.log('here we are');
+    console.log(coords);
+    console.log(this.geojsonPaint);
+
+
+
+
+    // this.map.addLayer({
+    //   id: 'route',
+    //   type: 'line',
+    //   source: {
+    //     type: 'geojson',
+    //     data: {
+    //       type: 'Feature',
+    //       properties: {},
+    //       geometry: {
+    //         type: 'LineString',
+    //         coordinates: geojson // eslint-disable-line no-use-before-define
+    //       }
+    //     }
+    //   },
+    //   layout: {
+    //     'line-join': 'round',
+    //     'line-cap': 'round'
+    //   },
+    //   paint: {
+    //     // 'line-color': '#3887be',
+    //     'line-color': '#ffc107',
+    //     'line-width': 5,
+    //     'line-opacity': 0.75
+    //   }
+    // });
+
+
+
+    if (this.map.getSource('route')) {
+      this.map.removeLayer('route');
+      this.map.removeSource('route');
+    }
+      // console.log('if');
+      // this.map.getSource('route').setData(this.geojsonPaint); // eslint-disable-line no-use-before-define
+    // } else {
+      // console.log('else');
+
+      this.map.addLayer({
+        "id": "route",
+        "type": "line",
+        "source": {
+            "type": "geojson",
+            "data": {
+                "type": "Feature",
+                "properties": {},
+                "geometry": {
+                    "type": "LineString",
+                    "coordinates": this.geojsonPaint.features[0].geometry.coordinates
+                        // [-122.48369693756104, 37.83381888486939],
+                        // [-122.48348236083984, 37.83317489144141],
+                        // [-122.48339653015138, 37.83270036637107],
+                        // [-122.48356819152832, 37.832056363179625]
+
+                }
+            }
+        }, "layout": {
+            'line-join': 'round',
+            'line-cap': 'round'
+          },
+        "paint": {
+            'line-color': '#ffc107',
+            'line-width': 5,
+            'line-opacity': 0.75
+            // "line-color": "#888",
+            // "line-width": 8,
+            // "line-gap-width": 10
+        }
+      });
+
+  }
+
   removeMarker(marker) {
     this.mapService.removeMarker(marker.$key)
   }
@@ -980,7 +1428,7 @@ loadingTimed():void {
   flyTo(data: GeoJson) {
     this.cameraRotate = !this.cameraRotate;
     this.map.flyTo({
-      center: data.geometry.coordinates, // eslint-disable-line no-use-before-define
+      center: (data.geometry.coordinates as mapboxgl.LngLatLike), // eslint-disable-line no-use-before-define
       zoom: 17
     })
   }
@@ -988,7 +1436,7 @@ loadingTimed():void {
   flyToCoords(coords: any[]) {
     this.cameraRotate = !this.cameraRotate;
     this.map.flyTo({
-      center: coords, // eslint-disable-line no-use-before-define
+      center: (coords as mapboxgl.LngLatLike), // eslint-disable-line no-use-before-define
       zoom: 17
     })
   }
@@ -1043,6 +1491,16 @@ loadingTimed():void {
     this.waypoints.splice(i,1);
   }
 
+  addWaypoint(i:number){
+    var waypointArray: string[] = this.waypoints[i].split(',');
+
+    var waypointNumber = [Number.parseFloat(waypointArray[0]),Number.parseFloat(waypointArray[1])];
+      this.directions.addWaypoint(1,waypointNumber);
+  }
+
+  getDirectionsWaypoints(){
+    console.table(this.directions.getWaypoints())
+  }
 
   confirmTimeout(){
 
@@ -1356,9 +1814,15 @@ routeFunction(req) {
   // console.log(Math.ceil(Math.round(data.distance)/5)*5);
   // Math.ceil(Math.round(data.distance)/5)*5: 930
 
+  console.log(data.distance);
   this.distance = Math.ceil(Math.round(data.distance)/5)*5;
 
+  console.log(Math.round(data.distance)/5);
+  console.log(Math.ceil(Math.round(data.distance)/5)*5);
+
   this.distanceToRoskis = this.distance.toString();
+  console.log('this.distance');
+  console.log(this.distance);
 
   if (this.distance > 2500) {
     // console.log(this.distanceToRoskis);
@@ -1370,17 +1834,45 @@ routeFunction(req) {
   this.digit = Math.round(Number.parseInt(this.distanceToRoskis));
 
   var route = data.geometry.coordinates;
-  var geojson = {
-    type: 'Feature',
-    properties: {},
-    geometry: {
-      type: 'LineString',
+  // var geojson:GeoJson = {
+  //   type: 'Feature',
+  //   properties: {},
+  //   geometry: {
+  //     type: 'LineString',
+  //     coordinates: route
+  //   }
+  // };
+  const geojsonFeature = {
+    type: 'Feature' as const,
+    properties: {
+      name: 'route',
+      amenity: 'Custom Route',
+      popupContent: 'Route'
+    },
+      geometry: {
+      type: 'LineString' as const,
       coordinates: route
     }
-  };
+  }
+  // FeatureCollection<Geometry, { [name: string]: any; }>
+  // var geojson:GeoJson= {
+  //   type: "FeatureCollection",
+  //   features: [{
+  //       type: "Feature",
+  //       properties: {},
+  //     },
+  //     {
+  //       geometry: {
+  //         type: 'LineString',
+  //         coordinates: route
+  //       }
+  //     }],
+  // };
+
   // if the route already exists on the map, reset it using setData
   if (this.map.getSource('route')) {
-    this.map.getSource('route').setData(geojson); // eslint-disable-line no-use-before-define
+    const source: mapboxgl.GeoJSONSource = this.map.getSource('route') as mapboxgl.GeoJSONSource;
+    source.setData(geojsonFeature); // eslint-disable-line no-use-before-define
   } else { // otherwise, make a new request
     this.map.addLayer({
       id: 'route',
@@ -1392,7 +1884,7 @@ routeFunction(req) {
           properties: {},
           geometry: {
             type: 'LineString',
-            coordinates: geojson // eslint-disable-line no-use-before-define
+            coordinates: route // eslint-disable-line no-use-before-define
           }
         }
       },
@@ -1563,5 +2055,7 @@ getNearestPoint(fromCoordindexes: any[],pointCoordinates: any[]): number{
     if (Array.from(markerIndex)[0]) { return coords;
     } else { return coordinates;}
   }
+
+
 
 }

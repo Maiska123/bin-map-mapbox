@@ -65,7 +65,7 @@ export class DistanceComponent implements OnInit {
     const valueIncrement = (endValue - 0) / stepCount;
     const sinValueIncrement = Math.PI / stepCount;
 
-    let currentValue = this.digit;
+    let currentValue = 0;
     let currentSinValue = 0;
 
     if (this.lastDigit < this.digit) {
@@ -83,7 +83,7 @@ export class DistanceComponent implements OnInit {
   } else {
     function stepDown() {
       currentSinValue += sinValueIncrement;
-      currentValue += valueIncrement * Math.sin(currentSinValue) ** 2 * 2;
+      currentValue += valueIncrement * Math.sin(currentSinValue) ** 2 * 2 ;
 
       element.nativeElement.textContent = Math.abs(Math.floor(currentValue));
 
@@ -100,7 +100,7 @@ export class DistanceComponent implements OnInit {
   }
 
   genNumber = () => {
-    document.getElementById("distance").style.setProperty("--percent", Math.random());
+    // document.getElementById("distance").style.setProperty("--percent", Math.random());
 // console.log(getComputedStyle(document.getElementById("distance")).getPropertyValue('--percent'));
 
   };
@@ -130,7 +130,7 @@ export class DistanceComponent implements OnInit {
 
     function step() {
       currentSinValue += sinValueIncrement;
-      currentValue += valueIncrement * Math.sin(currentSinValue) ** 2 * 2;
+      currentValue += valueIncrement * Math.sin(currentSinValue) ** 2 *2 ;
 
       element.nativeElement.textContent = Math.abs(Math.floor(currentValue));
 
