@@ -1,8 +1,8 @@
 {
   "hosting": [
     {
-      "target": "bin-map-mapbox",
-      "public": "dist/bin-map-mapbox",
+      "target": "***REMOVED***",
+      "public": "dist/***REMOVED***",
       "ignore": [
         "**/.*"
       ],

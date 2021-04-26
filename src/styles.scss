@@ -12,19 +12,19 @@
 // Define the palettes for your theme using the Material Design palettes available in palette.scss
 // (imported above). For each palette, you can optionally specify a default, lighter, and darker
 // hue. Available color palettes: https://material.io/design/color/
-$bin-map-mapbox-primary: mat-palette($mat-indigo);
-$bin-map-mapbox-accent: mat-palette($mat-pink, A200, A100, A400);
+$***REMOVED***-primary: mat-palette($mat-indigo);
+$***REMOVED***-accent: mat-palette($mat-pink, A200, A100, A400);
 
 // The warn palette is optional (defaults to red).
-$bin-map-mapbox-warn: mat-palette($mat-red);
+$***REMOVED***-warn: mat-palette($mat-red);
 
 // Create the theme object (a Sass map containing all of the palettes).
-$bin-map-mapbox-theme: mat-light-theme($bin-map-mapbox-primary, $bin-map-mapbox-accent, $bin-map-mapbox-warn);
+$***REMOVED***-theme: mat-light-theme($***REMOVED***-primary, $***REMOVED***-accent, $***REMOVED***-warn);
 
 // Include theme styles for core and each component used in your app.
 // Alternatively, you can import and @include the theme mixins for each component
 // that you are using.
-@include angular-material-theme($bin-map-mapbox-theme);
+@include angular-material-theme($***REMOVED***-theme);
 
 /* You can add global styles to this file, and also import other style files */
 @import '~@angular/cdk/overlay-prebuilt.css';

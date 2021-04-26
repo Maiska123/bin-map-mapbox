@@ -14,9 +14,10 @@
     "target": "es2015",
     "lib": [
       "es2018",
-      "dom"
-    ]
+      "dom",
+      "webworker"]
   },
+  "files": ["./swtemplate.ts"],
   "angularCompilerOptions": {
     "fullTemplateTypeCheck": true,
     "strictInjectionParameters": true

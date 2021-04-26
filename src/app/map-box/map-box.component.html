@@ -16,7 +16,7 @@ style="z-index: 998;  position: absolute;
 top: 0;
 bottom: 0;
 left: 0;
-right: 0;">
+right: 0; overflow:hidden;">
 
   <!-- UTILITY MENU -->
   <mat-sidenav #sidenav style="z-index:1000; background: black;">
@@ -73,7 +73,7 @@ right: 0;">
       overflow-y: scroll;    width: -webkit-fill-available;">
         <ol style="list-style: none;">
           <li class="menu-item">
-            <button class="btn btn-warning" style="min-width: 190px;" (click)="getDirectionsWaypoints()">Get Directions Waypoints</button>
+            <button class="btn btn-warning" [disabled]="directionsOff" style="min-width: 190px;" (click)="getDirectionsWaypoints()">Get Directions Waypoints</button>
           </li>
           <li class="menu-item">
             <button class="btn btn-success" [disabled]="waypoints.length < 1" style="min-width: 190px;" (click)="applyWaypoints()">Get Route With Waypoints</button>
@@ -87,7 +87,7 @@ right: 0;">
           border-radius: 25px;" class="menu-item" *ngFor="let waypoint of waypoints; index as i" >
             <button style="max-width: 60px; margin-left: 5px !important;margin-right: 5px !important;" class="btn btn-success" (click)="getToWaypoint(i)">Get To waypoint</button>
             <button style="max-width: 60px; margin-left: 5px !important;margin-right: 5px !important;" class="btn btn-danger" (click)="deleteWaypoint(i)">Delete Waypoint</button>
-            <button class="btn btn-info" style="min-width: 50px;" (click)="addWaypoint(i)">Add Waypoint to directions</button>
+            <button class="btn btn-info" [disabled]="directionsOff" style="min-width: 50px;" (click)="addWaypoint(i)">Add Waypoint to directions</button>
           </li>
           <!-- <li class="menu-item">
             <button class="btn btn-warning" (click)="flyToUser()">Back To User</button>
@@ -129,6 +129,7 @@ right: 0;">
           style="z-index:999999;color:green;"
           style="transform: scale(2); margin-left: 74px;"
           (toggleChange)="paintToggleChange()"
+          (click)="paintingEvent($event)"
           [checked] = "paintingChecked"
           [disabled] = "paintingSwitchDisabled">
         </mat-slide-toggle>
@@ -139,7 +140,7 @@ right: 0;">
             <button class="btn btn-info" (click)="deletePainting()">Delete Painting</button>
           </li>
           <li class="menu-item">
-            <button class="btn btn-info">Dummy</button>
+            <button class="btn btn-info" (click)="emptyGeoJSONLine()">Delete Painted Route</button>
           </li>
           <li class="menu-item">
             <button class="btn btn-info">Dummy</button>
@@ -168,7 +169,7 @@ right: 0;">
     </div>
   </mat-sidenav>
 
-  <mat-sidenav-content>
+  <mat-sidenav-content style="overflow:hidden;">
 
 
 
@@ -199,11 +200,11 @@ right: 0;">
      </nav>
   </div> -->
 
-  <div class="box">
+  <div class="box" style="overflow:hidden;">
     <div #mapdiv ></div>
   </div>
 
-<div style="z-index: 10;" class="map" id="map">
+<div style="z-index: 10;overflow:hidden;" class="map" id="map">
 
 
 

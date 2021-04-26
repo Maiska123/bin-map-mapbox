@@ -37,7 +37,7 @@ export class MapBoxComponent implements OnInit{
   // lisää ominaisuus että reitti jonka varrelta poimii roskikset
   // voisi esim- näyttää vain ne kun reitti-navigointi on päällä
 
-
+  directionsOff:boolean = true;
   /* poimii roskikset, näyttää vain ne */
 
   // - tämä toimisi vallan mainiosti kyllä
@@ -119,7 +119,7 @@ export class MapBoxComponent implements OnInit{
     var x,y;
     this.eventData = event;
     x = event.pageX, y = event.pageY;
-    console.log('x: '+x +' ' + 'y: '+ y);
+    // console.log('x: '+x +' ' + 'y: '+ y);
     // this.map.on('click', (event) => {
     //   const coordinates = [event.lngLat.lng, event.lngLat.lat]
     // this.map.fire('click', (event));
@@ -211,7 +211,7 @@ export class MapBoxComponent implements OnInit{
     }
     var bounds: any[][] = this.map.getBounds().toArray();
 
-    console.log(bounds);
+    // console.log(bounds);
     var boundsArray: any[] =
     [ [ bounds[0][0], bounds[1][1] ],
       [ bounds[1][0], bounds[1][1] ],
@@ -241,6 +241,8 @@ export class MapBoxComponent implements OnInit{
 
 
     this.createGeoJSONLine(this.geojson);
+
+    this.getDistanceOfCoordsArray(this.geojsonPaint.features[0].geometry.coordinates);
     // array is full of coords from last run, lets purge them before next event is fired.
     this.paintCoords = [];
   }
@@ -249,11 +251,27 @@ export class MapBoxComponent implements OnInit{
     this.brushColor = color;
   }
 
+  paintingEvent(e){
+    // console.log(e);
+    if(e.type == 'touchstart' || e.type == 'touchmove' || e.type == 'touchend' || e.type == 'touchcancel'){
+      this.sidenav2.toggle();
+
+  }
+  else if (e.type == 'mousedown' || e.type == 'mouseup' || e.type == 'mousemove' || e.type == 'mouseover'|| e.type=='mouseout' || e.type=='mouseenter' || e.type=='mouseleave') {
+      this.sidenav2.toggle();
+  }
+
+    setTimeout(() => {
+      this.sidenav2.toggle();
+    }, 500);
+  }
 
   paintToggleChange(){
     // kun mahdollisesti löytyy jo jokin piirros kartalta
     // vaihdetaan pensselin väriä että erottuisi
     // edellisestä taideteoksesta
+
+
     var max = 255;
     var min = 0;
 
@@ -267,9 +285,9 @@ export class MapBoxComponent implements OnInit{
     this.changeBrushColor("rgba(0,0,0,1)");
 
      this.paintingOn = !this.paintingOn;
-    console.log('paintingOn'+this.paintingOn);
-    console.log('paintingChecked'+this.paintingChecked);
-    console.log('paintingSwitchDisabled'+this.paintingSwitchDisabled);
+    // console.log('paintingOn'+this.paintingOn);
+    // console.log('paintingChecked'+this.paintingChecked);
+    // console.log('paintingSwitchDisabled'+this.paintingSwitchDisabled);
   }
 
 
@@ -695,7 +713,7 @@ loadingTimed():void {
 
   makeObject(){
 
-    console.log(this.roskisCoordData);
+    // console.log(this.roskisCoordData);
     let splitted: any[];
 
     this.roskisData.forEach( (value,i) => {
@@ -703,7 +721,7 @@ loadingTimed():void {
       value.coords = [Number(splitted[1]),Number(splitted[0])];
       }
     )
-    console.log(this.roskisData);
+    // console.log(this.roskisData);
 
   }
 
@@ -723,7 +741,7 @@ loadingTimed():void {
       // tekee jokasesta insertistä callbäkin koska data muuttunut
 
     });
-    console.log(set);
+    // console.log(set);
   }
 
 
@@ -1018,8 +1036,8 @@ loadingTimed():void {
         }
 
        if (this.inBoundingBox(bboxCoord1,bboxCoord2,elementCoords)) {
-         console.log(element);
-         console.log('true: ' + countInside);
+        //  console.log(element);
+        //  console.log('true: ' + countInside);
          markerIndex.add(countInside);
        };
        countInside++;
@@ -1108,7 +1126,7 @@ loadingTimed():void {
           divElement.appendChild(markerNewBtn);
 
           markerNewBtn.addEventListener('click', (e) => {
-            console.log('Button clicked' + name);
+            // console.log('Button clicked' + name);
             this.mapService.createMarker(newMarker)
             popup.remove();
             this.clicked = false;
@@ -1118,7 +1136,7 @@ loadingTimed():void {
         addToWaypoints.addEventListener('click', (e) => {
           // console.log('Button clicked' + name);
           this.waypoints.push(coordinates.toString());
-          console.log(this.waypoints)
+          // console.log(this.waypoints)
           popup.remove();
           this.clicked = false;
         });
@@ -1151,9 +1169,9 @@ loadingTimed():void {
         this.paintCoords.push(coordinates);
         // this.geojsonPaint.features[0].geometry.c
         this.geojsonPaint.features[0].geometry.coordinates.push(coordinates);
-        console.log(this.paintCoords);
-        console.log('this.paintCoords');
-        console.log(this.geojsonPaint);
+        // console.log(this.paintCoords);
+        // console.log('this.paintCoords');
+        // console.log(this.geojsonPaint);
       }
       //this.getRoute(coordinates);// mapService.createMarker(newMarker)
       // console.log(event)
@@ -1164,14 +1182,14 @@ loadingTimed():void {
     this.map.on('foo', (event) => {
 
       //  fire event "mapboxgl-canvas"
-      console.log(event)
+      // console.log(event)
       // {"x":581,"y":70}
       //this.map.
       const coordinates = [event.lngLat.lng, event.lngLat.lat];
       this.paintCoords.push(coordinates);
       // this.geojsonPaint.features[0].geometry.c
       this.geojsonPaint.features[0].geometry.coordinates.push(coordinates);
-      console.log(this.paintCoords);
+      // console.log(this.paintCoords);
 
     })
 
@@ -1342,10 +1360,36 @@ loadingTimed():void {
 
   /// Helpers
 
+  emptyGeoJSONLine(){
+    this.geojsonPaint = {
+      type: 'FeatureCollection',
+      features: [
+        {
+          type: 'Feature',
+          geometry: {
+            type: 'LineString',
+            coordinates: []
+          },
+          properties: {}
+        }
+      ]
+    };
+
+    if (this.map.getLayer('route')) {
+      this.map.removeLayer('route');
+    }
+    if (this.map.getSource('route')) {
+      this.map.removeSource('route');
+    }
+
+
+  }
+
+
   createGeoJSONLine(coords?:any){
-    console.log('here we are');
-    console.log(coords);
-    console.log(this.geojsonPaint);
+    // console.log('here we are');
+    // console.log(coords);
+    // console.log(this.geojsonPaint);
 
 
 
@@ -1543,7 +1587,7 @@ loadingTimed():void {
   var endString: string[] = this.waypoints[this.waypoints.length-1].split(',');
 
   var end = [Number.parseFloat(endString[0]),Number.parseFloat(endString[1])];
-  console.log(end);
+  // console.log(end);
   // everything in between is gradually added after start but before end
   // on display it should show waypoints with numbers of order
   var waypointsToUrl: string = '';
@@ -1554,7 +1598,7 @@ loadingTimed():void {
     waypointsToUrl += (value +';');
   });
 
-  console.log(waypointsToUrl);
+  // console.log(waypointsToUrl);
 
     this.currentPosition = start;
 
@@ -1814,15 +1858,15 @@ routeFunction(req) {
   // console.log(Math.ceil(Math.round(data.distance)/5)*5);
   // Math.ceil(Math.round(data.distance)/5)*5: 930
 
-  console.log(data.distance);
+  // console.log(data.distance);
   this.distance = Math.ceil(Math.round(data.distance)/5)*5;
 
-  console.log(Math.round(data.distance)/5);
-  console.log(Math.ceil(Math.round(data.distance)/5)*5);
+  // console.log(Math.round(data.distance)/5);
+  // console.log(Math.ceil(Math.round(data.distance)/5)*5);
 
   this.distanceToRoskis = this.distance.toString();
-  console.log('this.distance');
-  console.log(this.distance);
+  // console.log('this.distance');
+  // console.log(this.distance);
 
   if (this.distance > 2500) {
     // console.log(this.distanceToRoskis);
@@ -1908,6 +1952,101 @@ routeFunction(req) {
   // find these and hide
   // class="mapboxgl-ctrl mapboxgl-ctrl-attrib"
   // class="mapboxgl-ctrl-bottom-left"
+
+deg2rad(deg)
+{
+    return deg * (Math.PI/180);
+}
+
+getDistance(pair1, pair2)
+{
+    const [lat1, lon1] = pair1, [lat2, lon2] = pair2;
+    const R = 6371; // Radius of the earth in km.
+
+    var dLat = this.deg2rad(lat2-lat1);
+    var dLon = this.deg2rad(lon2-lon1);
+    var a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(this.deg2rad(lat1)) * Math.cos(this.deg2rad(lat2)) *
+            Math.sin(dLon/2) * Math.sin(dLon/2);
+    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+    // Return distance in km.
+    return R * c;
+}
+
+
+getDistanceOfCoordsArray(coords:any[]){
+
+
+  // const input = {
+  //   "data": [
+  //     {"latitude":37.80, "longitude":-121.493300, "report_date":"2019-07-01 12:00:00"},
+  //     {"latitude":37.80, "longitude":-121.493300, "report_date":"2019-07-01 12:03:00"},
+  //     {"latitude":37.80, "longitude":-121.493300, "report_date":"2019-07-01 12:06:00"}
+  //   ]
+  // };
+
+  // Get the distances:
+
+  const data = coords;
+  // console.log(data);
+
+  var lenght:number = 0;
+
+  // for (let i = 1; i < data.length; i++)
+  // {
+  //     let pair1 = [data[i-1][0], data[i-1][1]];
+  //     let pair2 = [data[i][0], data[i][1]];
+  //     // console.log(`Distance from ${timestamp1} to ${timestamp2}:`);
+  //     // console.log(this.getDistance(pair1, pair2));
+  //     lenght += this.getDistance(pair1, pair2)
+  // }
+console.log(data)
+var init: any;
+var pair2: any;
+  data.forEach((element, i) => {
+
+    // if (i<data.length){
+
+    pair2 = [element[0],element[1]];
+
+    if (!init){
+      init = pair2;
+    }
+
+    // console.log(`Distance from ${timestamp1} to ${timestamp2}:`);
+    // console.log(pair1);
+
+  // if(init && pair2){
+    lenght += this.getDistance(init, pair2);
+    init = pair2;
+  // }
+  // }
+  });
+
+  console.log(length);
+
+  this.distance = Math.ceil(Math.round(lenght)/5)*5;
+
+  // console.log(Math.round(data.distance)/5);
+  // console.log(Math.ceil(Math.round(data.distance)/5)*5);
+
+  this.distanceToRoskis = this.distance.toString();
+  // console.log('this.distance');
+  // console.log(this.distance);
+
+  if (this.distance > 2500) {
+    // console.log(this.distanceToRoskis);
+
+    this.distanceToRoskis = (((lenght/1000))).toFixed(2);
+    // console.log(this.distanceToRoskis);
+  }
+
+  this.digit = Math.round(Number.parseInt(this.distanceToRoskis));
+
+
+}
+
 
 getNearestPoint(fromCoordindexes: any[],pointCoordinates: any[]): number{
 

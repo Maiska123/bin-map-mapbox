@@ -59,11 +59,11 @@ export class DrawingCanvasComponent implements OnInit {
     onResize(event) {
       this.innerWidth = event.target.innerWidth;
       this.innerHeight = event.target.innerHeight;
-      console.log('Width: '+ this.innerWidth +' Height: '+ this.innerHeight);
+      // console.log('Width: '+ this.innerWidth +' Height: '+ this.innerHeight);
       this.canvas.nativeElement.width = this.innerWidth;
       this.canvas.nativeElement.height = this.innerHeight;
-      console.log(this.ctx);
-      console.log(this.canvas);
+      // console.log(this.ctx);
+      // console.log(this.canvas);
     }
 
   onCanvasDrawn() {
@@ -73,10 +73,26 @@ export class DrawingCanvasComponent implements OnInit {
   }
 
   startPosition(e){
+    // Draw a dot if the mouse button is currently being pressed
+
     this.painting = true;
-    this.x = e.pageX;
-    this.y = e.pageY;
-    this.draw(e);
+
+    // separated mouse and touch events (mousedown is for emulating mouse for touch)
+    if (this.mouseDown) {
+
+      this.getMousePos(e);
+      var f = e.changedTouches[0];
+      this.x = f.screenX;
+      this.y = f.screenY;
+      this.drawTouch(e);
+
+    } else {
+
+      this.x = e.pageX;
+      this.y = e.pageY;
+      this.draw(e);
+
+    }
   }
 
   finishedPosition(){
@@ -84,9 +100,19 @@ export class DrawingCanvasComponent implements OnInit {
     this.ctx.beginPath();
 
     var drawData = this.ctx.getImageData(0, 0, this.canvas.nativeElement.width, this.canvas.nativeElement.height)
-    console.log(drawData);
+    // console.log(drawData);
     this.onCanvasDrawn();
     //this.PaintingToggle = !this.PaintingToggle;
+  }
+
+  positionMove(e){
+    this.getMousePos(e);
+
+    // Draw a dot if the mouse button is currently being pressed
+    if (this.mouseDown) {
+        //this.drawDot(ctx,mouseX,mouseY,12);
+        this.drawTouch(e);
+    }
   }
 
   draw(e){
@@ -99,8 +125,11 @@ export class DrawingCanvasComponent implements OnInit {
     this.ctx.lineTo(e.clientX, e.clientY);
     this.ctx.stroke();
     this.ctx.beginPath();
-    this.ctx.moveTo(e.clientX,e.clientY);
+    this.ctx.moveTo(e.clientX, e.clientY);
 
+
+    // Jokaista 10px kohden emitoidaan eventti parentille
+    // tarkoitus on luoda custom-route pisteillä
     var math = Math.round(Math.sqrt(Math.pow(this.y - e.clientY, 2) +
     Math.pow(this.x - e.clientX, 2)));
 
@@ -113,8 +142,118 @@ export class DrawingCanvasComponent implements OnInit {
     }
   }
 
+  drawTouch(e){
+    if(!this.painting) return;
+    this.ctx.lineWidth = 10;
+    this.ctx.lineCap = 'round';
+    this.ctx.strokeStyle = this.brushColor;
+    // this.ctx. = 'black';
+
+    // console.log('mouseX: ' + this.mouseX + ' mouseY: ' + this.mouseY);
+
+    this.ctx.lineTo(this.mouseX, this.mouseY);
+    this.ctx.stroke();
+    this.ctx.beginPath();
+    this.ctx.moveTo(this.mouseX, this.mouseY);
+
+    e = e.changedTouches[0];
+    // Jokaista 10px kohden emitoidaan eventti parentille
+    // tarkoitus on luoda custom-route pisteillä
+    var math = Math.round(Math.sqrt(Math.pow(this.y - e.screenY, 2) +
+    Math.pow(this.x - e.screenX, 2)));
+    // console.log('--------MATH----------');
+    // console.log(math);
+    // console.log(this.y);
+    // console.log(e.screenY);
+    // console.log(this.x);
+    // console.log(e.screenX);
+
+    if (math > 9){
+
+      this.createPoint.emit(e);
+
+      this.x = e.screenX;
+      this.y = e.screenY;
+    }
+  }
+
   ngOnInit() {
   }
+    // Variables for referencing the canvas and 2dcanvas context
+    // canvas,ctx;
+
+    // Variables to keep track of the mouse position and left-button status
+    mouseX:any;
+    mouseY:any;
+    mouseDown:boolean=false;
+
+    // Draws a dot at a specific position on the supplied canvas name
+    // Parameters are: A canvas context, the x position, the y position, the size of the dot
+
+      // Keep track of the mouse button being pressed and draw a dot at current location
+    sketchpad_mouseDown(e) {
+        this.mouseDown=true;
+        // this.drawDot(ctx,mouseX,mouseY,12);
+        this.draw(e);
+    }
+
+    // Keep track of the mouse button being released
+    sketchpad_mouseUp() {
+        this.mouseDown=false;
+    }
+
+    // Keep track of the mouse position and draw a dot if mouse button is currently pressed
+    sketchpad_mouseMove(e) {
+        // Update the mouse co-ordinates when moved
+        this.getMousePos(e);
+
+        // Draw a dot if the mouse button is currently being pressed
+        if (this.mouseDown) {
+            //this.drawDot(ctx,mouseX,mouseY,12);
+            this.draw(e);
+        }
+    }
+
+    // Get the current mouse position relative to the top-left of the canvas
+    getMousePos(e:any) {
+      // console.log(e);
+      e = e.changedTouches[0];
+
+        if (!e)
+            var e:any = window.event;
+
+        if (e.offsetX) {
+          this.mouseX = e.offsetX;
+          this.mouseY = e.offsetY;
+        } else if (e.clientX) {
+          this.mouseX = e.clientX;
+          this.mouseY = e.clientY;
+        } else if (e.pageX) {
+          this.mouseX = e.pageX;
+          this.mouseY = e.pageY;
+        } else if (e.screenX) {
+          this.mouseX = e.screenX;
+          this.mouseY = e.screenY;
+        } else if (e.layerX) {
+          this.mouseX = e.layerX;
+          this.mouseY = e.layerY;
+        }
+        // this.x = e.pageX;
+        // this.y = e.pageY;
+
+
+    // console.log('offset, mouseX: ' + e.offsetX + ' mouseY: ' + e.offsetY);
+
+    // console.log('screen, mouseX: ' + e.screenX + ' mouseY: ' + e.screenY);
+
+    // console.log('layer, mouseX: ' + e.layerX + ' mouseY: ' + e.layerY);
+
+    // console.log('client, mouseX: ' + e.clientX + ' mouseY: ' + e.clientY);
+
+    // console.log('page, mouseX: ' + e.pageX + ' mouseY: ' + e.pageY);
+
+     }
+
 
   ngAfterViewInit(): void {
     // this.ctx = Array.from(document.getElementsByClassName('mapboxgl-ctrl-bottom-right') as HTMLCollectionOf<HTMLElement>);
@@ -127,18 +266,38 @@ export class DrawingCanvasComponent implements OnInit {
     this.canvas.nativeElement.width = document.body.clientWidth;
     this.canvas.nativeElement.height = document.body.clientHeight;
 
+    this.canvas.nativeElement.addEventListener('touchstart', (e) => {
+      // console.log('Button clicked' + ' touchstart');
+
+      this.mouseDown = true;
+      this.startPosition(e);
+    });
+    this.canvas.nativeElement.addEventListener('touchend', (e) => {
+      // console.log('Button clicked' + ' touchend');
+
+      this.mouseDown = false;
+      this.finishedPosition();
+    });
+    this.canvas.nativeElement.addEventListener('touchmove', (e) => {
+      // console.log('Button clicked' + ' touchmove');
+
+      this.positionMove(e);
+    });
+
+
     this.canvas.nativeElement.addEventListener('mousedown', (e) => {
-      console.log('Button clicked' + name);
+      // console.log('Button clicked' + ' mousedown');
       this.startPosition(e);
     });
     this.canvas.nativeElement.addEventListener('mouseup', (e) => {
-      console.log('Button clicked' + name);
+      // console.log('Button clicked' + ' mouseup');
       this.finishedPosition();
     });
     this.canvas.nativeElement.addEventListener('mousemove', (e) => {
       // console.log('Button clicked' + name);
       this.draw(e);
     });
+
 
     this.innerWidth = window.innerWidth;
     this.innerHeight = window.innerHeight;
