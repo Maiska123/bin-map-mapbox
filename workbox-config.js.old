@@ -1,5 +1,5 @@
 module.exports = {
-  globDirectory: "./dist/***REMOVED***",
+  globDirectory: "./dist/bin-map-mapbox",
     //This is a good start for ngx but edit to match your app
   globPatterns: [
    "*.{png,svg,jpg,txt,gif,css,js,ico,eot,ttf,woff,json}",

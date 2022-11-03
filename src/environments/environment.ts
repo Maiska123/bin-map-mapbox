@@ -10,9 +10,9 @@ export const environment = {
     authDomain: "***REMOVED***",
     databaseURL: "***REMOVED***",
     projectId: "***REMOVED***",
-    storageBucket: "***REMOVED***.appspot.com",
+    storageBucket: "***REMOVED***",
     messagingSenderId: "***REMOVED***",
-    appId: "1:***REMOVED***:web:16e9fe824e050050eb5ff9",
+    appId: "***REMOVED***",
     measurementId: "***REMOVED***"
   },
 
