@@ -1,12 +1,14 @@
 // vars
-$color: #fff;     // icon color
-$blue: #158fef;   // background color
+$color: #fff; // icon color
+$blue: #158fef; // background color
 $animation: 0.35s; // animation speed
-$scale: 1;        // icon scale 68/68 default
+$scale: 1; // icon scale 68/68 default
 
-*, *:before, *:after {
+*,
+*:before,
+*:after {
   // box-sizing: border-box;
- }
+}
 
 
 // spacing + background-color
@@ -16,7 +18,7 @@ body {
 }
 
 h4 {
-  font-family: arial,helvetica,serif;
+  font-family: arial, helvetica, serif;
   color: $color;
   font-size: 18px;
   text-align: center;
@@ -64,6 +66,7 @@ h4 {
   margin: 34px 34px 0 0;
   transform: rotate(0deg);
   transform-origin: 100% 0;
+
   &:before {
     content: '';
     display: block;
@@ -79,9 +82,11 @@ h4 {
   0% {
     transform: rotate(0deg);
   }
+
   40% {
     transform: rotate(180deg);
   }
+
   100% {
     transform: rotate(360deg);
   }
@@ -91,9 +96,11 @@ h4 {
   0% {
     transform: rotate(360deg);
   }
+
   40% {
     transform: rotate(180deg);
   }
+
   100% {
     transform: rotate(0deg);
   }
@@ -106,22 +113,24 @@ h4 {
 .hamburglar.is-open {
   .path {
     animation: dash-in $animation linear normal;
-    animation-fill-mode:forwards;
+    animation-fill-mode: forwards;
   }
+
   .animate-path {
     animation: rotate-in $animation linear normal;
-    animation-fill-mode:forwards;
+    animation-fill-mode: forwards;
   }
 }
 
 .hamburglar.is-closed {
   .path {
     animation: dash-out $animation linear normal;
-    animation-fill-mode:forwards;
+    animation-fill-mode: forwards;
   }
+
   .animate-path {
     animation: rotate-out $animation linear normal;
-    animation-fill-mode:forwards;
+    animation-fill-mode: forwards;
   }
 }
 
@@ -135,20 +144,25 @@ h4 {
   0% {
     stroke-dashoffset: 240;
   }
+
   40% {
     stroke-dashoffset: 240;
   }
+
   100% {
     stroke-dashoffset: 0;
   }
 }
+
 @keyframes dash-out {
   0% {
     stroke-dashoffset: 0;
   }
+
   40% {
     stroke-dashoffset: 240;
   }
+
   100% {
     stroke-dashoffset: 240;
   }
@@ -191,6 +205,7 @@ h4 {
   bottom: 0;
   transform-origin: 34px 2px;
 }
+
 //.burger-filling {
 //  @include transition(all,($animation/2.5),ease-in-//out);
 //}
@@ -222,21 +237,24 @@ h4 {
 .hamburglar.is-open {
   .burger-bun-top {
     animation: bun-top-out $animation linear normal;
-    animation-fill-mode:forwards;
+    animation-fill-mode: forwards;
   }
+
   .burger-bun-bot {
     animation: bun-bot-out $animation linear normal;
-    animation-fill-mode:forwards;
+    animation-fill-mode: forwards;
   }
 }
+
 .hamburglar.is-closed {
   .burger-bun-top {
     animation: bun-top-in $animation linear normal;
-    animation-fill-mode:forwards;
+    animation-fill-mode: forwards;
   }
+
   .burger-bun-bot {
     animation: bun-bot-in $animation linear normal;
-    animation-fill-mode:forwards;
+    animation-fill-mode: forwards;
   }
 }
 
@@ -246,16 +264,19 @@ h4 {
     top: 0;
     transform: rotate(0deg);
   }
+
   20% {
     left: 0;
     top: 0;
     transform: rotate(15deg);
   }
+
   80% {
     left: -5px;
     top: 0;
     transform: rotate(-60deg);
   }
+
   100% {
     left: -5px;
     top: 1px;
@@ -268,14 +289,17 @@ h4 {
     left: 0;
     transform: rotate(0deg);
   }
+
   20% {
     left: 0;
     transform: rotate(-15deg);
   }
+
   80% {
     left: -5px;
     transform: rotate(60deg);
   }
+
   100% {
     left: -5px;
     transform: rotate(45deg);
@@ -289,16 +313,19 @@ h4 {
     bot: 0;
     transform: rotate(-45deg);
   }
+
   20% {
     left: -5px;
     bot: 0;
     transform: rotate(-60deg);
   }
+
   80% {
     left: 0;
     bot: 0;
     transform: rotate(15deg);
   }
+
   100% {
     left: 0;
     bot: 1px;
@@ -311,16 +338,19 @@ h4 {
     left: -5px;
     transform: rotate(45deg);
   }
+
   20% {
     left: -5px;
     bot: 0;
     transform: rotate(60deg);
   }
+
   80% {
     left: 0;
     bot: 0;
     transform: rotate(-15deg);
   }
+
   100% {
     left: 0;
     transform: rotate(0deg);
@@ -332,14 +362,14 @@ h4 {
 .hamburglar.is-open {
   .burger-filling {
     animation: burger-fill-out $animation linear normal;
-    animation-fill-mode:forwards;
+    animation-fill-mode: forwards;
   }
 }
 
 .hamburglar.is-closed {
   .burger-filling {
     animation: burger-fill-in $animation linear normal;
-    animation-fill-mode:forwards;
+    animation-fill-mode: forwards;
   }
 }
 
@@ -348,14 +378,17 @@ h4 {
     width: 0;
     left: 36px;
   }
+
   40% {
     width: 0;
     left: 40px;
   }
+
   80% {
     width: 36px;
     left: -6px;
   }
+
   100% {
     width: 36px;
     left: 0px;
@@ -367,6 +400,7 @@ h4 {
     width: 36px;
     left: 0px;
   }
+
   20% {
     width: 42px;
     left: -6px;

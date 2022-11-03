@@ -1,17 +1,12 @@
-<div class="heading" [className]="hideDistance ? 'heading heading closed' : 'heading'" >
-  <!-- <span [ngSwitch]="distance < 2500">
-    <h1 *ngSwitchCase="true" class="h1" id="h1" style="color: aliceblue;">Distance To Roskis: <span id="distance" #animatedDigit ></span> {{distanceToRoskis}}m</h1>
-    <h1 *ngSwitchCase="false" class="h1" id="h1" style="color: aliceblue;">Distance To Roskis: <span id="distance" #animatedDigit ></span> {{distanceToRoskis}}km</h1>
-  </span> -->
-  <h1 class="h1" id="h1" style="color: aliceblue;">Distance To {{destination}}: <span id="distance" #animatedDigit ></span>
+<div
+  class="heading"
+  [className]="hideDistance ? 'heading heading closed' : 'heading'"
+>
+  <h1 class="h1" id="h1" style="color: aliceblue">
+    Distance To {{ destination }}: <span id="distance" #animatedDigit></span>
     <span [ngSwitch]="distance < 2500">
-      <span *ngSwitchCase="true">
-        m
-      </span>
-      <span *ngSwitchCase="false">
-      km
-      </span>
+      <span *ngSwitchCase="true"> m </span>
+      <span *ngSwitchCase="false"> km </span>
     </span>
   </h1>
-
 </div>
