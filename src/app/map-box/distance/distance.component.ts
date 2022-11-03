@@ -1,27 +1,32 @@
-import { Component, ElementRef, Input, OnInit, SimpleChanges, ViewChild } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  Input,
+  OnInit,
+  SimpleChanges,
+  ViewChild,
+} from '@angular/core';
 
 @Component({
   selector: 'app-distance',
   templateUrl: './distance.component.html',
-  styleUrls: ['./distance.component.scss']
+  styleUrls: ['./distance.component.scss'],
 })
 export class DistanceComponent implements OnInit {
-
-
   @Input() duration: number;
   @Input() digit: number;
   @Input() steps: number;
   @Input() destination: string;
   @Input() hideDistance: boolean;
-  @ViewChild("animatedDigit") animatedDigit: ElementRef;
+  @ViewChild('animatedDigit') animatedDigit: ElementRef;
 
   lastDigit: number;
-    // counter animation
-    @Input() distance: number;
-    // digit: number;
-    // steps: number;
+  // counter animation
+  @Input() distance: number;
+  // digit: number;
+  // steps: number;
 
-  constructor() { }
+  constructor() {}
 
   ngOnInit() {
     if (this.digit) {
@@ -31,14 +36,10 @@ export class DistanceComponent implements OnInit {
   }
 
   ngAfterViewInit(): void {
-    //Called after ngAfterContentInit when the component's view has been initialized. Applies to components only.
-    //Add 'implements AfterViewInit' to the class.
-    // console.log(getComputedStyle(document.getElementById("distance")).getPropertyValue('--percent'));
-
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    if (changes["digit"]) {
+    if (changes['digit']) {
       // this.lastDigit = this.digit;
       this.animateCount();
     }
@@ -51,7 +52,7 @@ export class DistanceComponent implements OnInit {
       this.duration = 1000;
     }
 
-    if (typeof this.digit === "number") {
+    if (typeof this.digit === 'number') {
       this.counterFunc(this.digit, this.duration, this.animatedDigit);
     }
   }
@@ -69,49 +70,41 @@ export class DistanceComponent implements OnInit {
     let currentSinValue = 0;
 
     if (this.lastDigit < this.digit) {
-    function stepUp() {
-      currentSinValue += sinValueIncrement;
-      currentValue += valueIncrement * Math.sin(currentSinValue) ** 2 * 2;
+      function stepUp() {
+        currentSinValue += sinValueIncrement;
+        currentValue += valueIncrement * Math.sin(currentSinValue) ** 2 * 2;
 
-      element.nativeElement.textContent = Math.abs(Math.floor(currentValue));
+        element.nativeElement.textContent = Math.abs(Math.floor(currentValue));
 
-      if (currentSinValue < Math.PI) {
-        window.requestAnimationFrame(stepUp);
+        if (currentSinValue < Math.PI) {
+          window.requestAnimationFrame(stepUp);
+        }
       }
-    }
-    stepUp();
-  } else {
-    function stepDown() {
-      currentSinValue += sinValueIncrement;
-      currentValue += valueIncrement * Math.sin(currentSinValue) ** 2 * 2 ;
+      stepUp();
+    } else {
+      function stepDown() {
+        currentSinValue += sinValueIncrement;
+        currentValue += valueIncrement * Math.sin(currentSinValue) ** 2 * 2;
 
-      element.nativeElement.textContent = Math.abs(Math.floor(currentValue));
+        element.nativeElement.textContent = Math.abs(Math.floor(currentValue));
 
-      if (currentSinValue < Math.PI) {
-        window.requestAnimationFrame(stepDown);
+        if (currentSinValue < Math.PI) {
+          window.requestAnimationFrame(stepDown);
+        }
       }
+      stepDown();
     }
-    stepDown();
-
-  }
-
-
-
   }
 
   genNumber = () => {
-    // document.getElementById("distance").style.setProperty("--percent", Math.random());
-// console.log(getComputedStyle(document.getElementById("distance")).getPropertyValue('--percent'));
-
   };
-
 
   animateCount1() {
     if (!this.distance) {
       this.distance = 0;
     }
 
-    if (typeof this.digit === "number") {
+    if (typeof this.digit === 'number') {
       this.counterFunc1(this.digit, this.duration, this.animatedDigit);
     }
   }
@@ -130,7 +123,7 @@ export class DistanceComponent implements OnInit {
 
     function step() {
       currentSinValue += sinValueIncrement;
-      currentValue += valueIncrement * Math.sin(currentSinValue) ** 2 *2 ;
+      currentValue += valueIncrement * Math.sin(currentSinValue) ** 2 * 2;
 
       element.nativeElement.textContent = Math.abs(Math.floor(currentValue));
 
@@ -141,5 +134,4 @@ export class DistanceComponent implements OnInit {
 
     step();
   }
-
 }

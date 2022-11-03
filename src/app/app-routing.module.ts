@@ -9,11 +9,6 @@ const routes: Routes = [
   { path: "map", component: MapBoxComponent },
   { path: "run/:id", component: MapBoxComponent },
   { path: "", redirectTo: "/map", pathMatch: 'full' }
-
-  // { path: "runs", component: ActivityListComponent },
-  // { path: "run/:id", component: MapComponent },
-  // { path: "", redirectTo: "/runs", pathMatch: 'full' }
-
 ];
 
 @NgModule({

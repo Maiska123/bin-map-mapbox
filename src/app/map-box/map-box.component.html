@@ -1,49 +1,73 @@
 <!-- <input type="text" [(ngModel)]="message" placeholder="your message..."> -->
 
-
 <app-drawing-canvas
-
-*ngIf="paintingOn"
-[paintingToggle]="paintingOn"
-(delete)='deleteQuote($event,i)'
-(createPoint)='createPoint($event,i)'
-[brushColor]="brushColor">
-
+  *ngIf="paintingOn"
+  [paintingToggle]="paintingOn"
+  (delete)="deleteQuote($event, i)"
+  (createPoint)="createPoint($event, i)"
+  [brushColor]="brushColor"
+>
 </app-drawing-canvas>
 
-<mat-sidenav-container [hasBackdrop]="false"
-style="z-index: 998;  position: absolute;
-top: 0;
-bottom: 0;
-left: 0;
-right: 0;">
-
+<mat-sidenav-container
+  [hasBackdrop]="false"
+  style="
+    z-index: 998;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    overflow: hidden;
+  "
+>
   <!-- UTILITY MENU -->
-  <mat-sidenav #sidenav style="z-index:1000; background: black;">
+  <mat-sidenav #sidenav style="z-index: 1000; background: black">
     <div class="container">
-      <div style="padding-top: 10px; padding-right: 20px;display: inline-block;">
-        <ol style="list-style: none;">
-          <mat-slide-toggle color="accent" style="color:green" style="transform: scale(2); margin-left: 74px;" (toggleChange)="flyToBinToggle()" [checked] = "flyToBinChecked"
-          [disabled] = "flyToBinButtonDisabled"></mat-slide-toggle>
-          <li class="menu-item" style="color: white;">
-            Go To Nearest Bin On Click
-           </li>
-           <mat-slide-toggle color="accent" style="color:green" style="transform: scale(2); margin-left: 74px;margin-top:10px" (toggleChange)="hideDistanceToggle()" [checked] = "!hideDistance"
+      <div
+        style="padding-top: 10px; padding-right: 20px; display: inline-block"
+      >
+        <ol style="list-style: none">
+          <mat-slide-toggle
+            color="accent"
+            style="color: green"
+            style="transform: scale(2); margin-left: 74px"
+            (toggleChange)="flyToBinToggle()"
+            [checked]="flyToBinChecked"
+            [disabled]="flyToBinButtonDisabled"
           ></mat-slide-toggle>
-          <li class="menu-item" style="color: white;">
+          <li class="menu-item" style="color: white">
+            Go To Nearest Bin On Click
+          </li>
+          <mat-slide-toggle
+            color="accent"
+            style="color: green"
+            style="transform: scale(2); margin-left: 74px; margin-top: 10px"
+            (toggleChange)="hideDistanceToggle()"
+            [checked]="!hideDistance"
+          ></mat-slide-toggle>
+          <li class="menu-item" style="color: white">
             Show Distance Calculation
-           </li>
-          <li class="menu-item">
-            <button class="btn btn-danger" (click)="getNearestRoskis()">Get Nearest Roskis</button>
           </li>
           <li class="menu-item">
-            <button class="btn btn-warning" (click)="flyToUser()">Back To User</button>
+            <button class="btn btn-danger" (click)="getNearestRoskis()">
+              Get Nearest Roskis
+            </button>
           </li>
           <li class="menu-item">
-            <button class="btn btn-secondary" (click)="flyToCurrentRoskis()">Fly To the Nearest Roskis</button>
+            <button class="btn btn-warning" (click)="flyToUser()">
+              Back To User
+            </button>
           </li>
           <li class="menu-item">
-            <button class="btn btn-info" (click)="cameraMovement()">Rotate Camera</button>
+            <button class="btn btn-secondary" (click)="flyToCurrentRoskis()">
+              Fly To the Nearest Roskis
+            </button>
+          </li>
+          <li class="menu-item">
+            <button class="btn btn-info" (click)="cameraMovement()">
+              Rotate Camera
+            </button>
           </li>
           <!-- <li class="menu-item">
             <button class="btn btn-success" (click)="applyWaypoints()">Get Route With Waypoints</button>
@@ -52,42 +76,108 @@ right: 0;">
       </div>
 
       <div class="outer-point">
-        <app-hamburger-menu class="burgermenu1" (click)="burgerTime()"  [isClosed]="burgertime" style="flex: auto;display: inline-block;"></app-hamburger-menu>
+        <app-hamburger-menu
+          class="burgermenu1"
+          (click)="burgerTime()"
+          [isClosed]="burgertime"
+          style="flex: auto; display: inline-block"
+        ></app-hamburger-menu>
       </div>
-
-
     </div>
-
-
-
   </mat-sidenav>
 
   <!-- WAYPOINT MENU -->
-  <mat-sidenav #sidenav1 mode="side" position="start" role="navigation" class="sidenav-wv" style="
-  z-index: 999;
-  visibility: visible;
-  top: 24vh;    background: black;">
-    <div class="container" style="min-width: 220px;width: max-content;"> <!-- max-width: 296px; -->
+  <mat-sidenav
+    #sidenav1
+    mode="side"
+    position="start"
+    role="navigation"
+    class="sidenav-wv"
+    style="z-index: 999; visibility: visible; top: 24vh; background: black"
+  >
+    <div class="container" style="min-width: 220px; width: max-content">
+      <!-- max-width: 296px; -->
 
-      <div style="padding-top: 10px; padding-right: 20px;display: inline-block;     max-height: 60vh;
-      overflow-y: scroll;    width: -webkit-fill-available;">
-        <ol style="list-style: none;">
+      <div
+        style="
+          padding-top: 10px;
+          padding-right: 20px;
+          display: inline-block;
+          max-height: 60vh;
+          overflow-y: scroll;
+          width: -webkit-fill-available;
+        "
+      >
+        <ol style="list-style: none">
           <li class="menu-item">
-            <button class="btn btn-warning" style="min-width: 190px;" (click)="getDirectionsWaypoints()">Get Directions Waypoints</button>
+            <button
+              class="btn btn-warning"
+              [disabled]="directionsOff"
+              style="min-width: 190px"
+              (click)="getDirectionsWaypoints()"
+            >
+              Get Directions Waypoints
+            </button>
           </li>
           <li class="menu-item">
-            <button class="btn btn-success" [disabled]="waypoints.length < 1" style="min-width: 190px;" (click)="applyWaypoints()">Get Route With Waypoints</button>
+            <button
+              class="btn btn-success"
+              [disabled]="waypoints.length < 1"
+              style="min-width: 190px"
+              (click)="applyWaypoints()"
+            >
+              Get Route With Waypoints
+            </button>
           </li>
           <li class="menu-item">
-            <button style="min-width: 190px;" class="btn btn-warning" (click)="flyToUser()">Back To User</button>
+            <button
+              style="min-width: 190px"
+              class="btn btn-warning"
+              (click)="flyToUser()"
+            >
+              Back To User
+            </button>
           </li>
-          <li style="max-width: 230px;
-          background-color: rgba(255,255,255,0.14);
-          margin-bottom: 10px;
-          border-radius: 25px;" class="menu-item" *ngFor="let waypoint of waypoints; index as i" >
-            <button style="max-width: 60px; margin-left: 5px !important;margin-right: 5px !important;" class="btn btn-success" (click)="getToWaypoint(i)">Get To waypoint</button>
-            <button style="max-width: 60px; margin-left: 5px !important;margin-right: 5px !important;" class="btn btn-danger" (click)="deleteWaypoint(i)">Delete Waypoint</button>
-            <button class="btn btn-info" style="min-width: 50px;" (click)="addWaypoint(i)">Add Waypoint to directions</button>
+          <li
+            style="
+              max-width: 230px;
+              background-color: rgba(255, 255, 255, 0.14);
+              margin-bottom: 10px;
+              border-radius: 25px;
+            "
+            class="menu-item"
+            *ngFor="let waypoint of waypoints; index as i"
+          >
+            <button
+              style="
+                max-width: 60px;
+                margin-left: 5px !important;
+                margin-right: 5px !important;
+              "
+              class="btn btn-success"
+              (click)="getToWaypoint(i)"
+            >
+              Get To waypoint
+            </button>
+            <button
+              style="
+                max-width: 60px;
+                margin-left: 5px !important;
+                margin-right: 5px !important;
+              "
+              class="btn btn-danger"
+              (click)="deleteWaypoint(i)"
+            >
+              Delete Waypoint
+            </button>
+            <button
+              class="btn btn-info"
+              [disabled]="directionsOff"
+              style="min-width: 50px"
+              (click)="addWaypoint(i)"
+            >
+              Add Waypoint to directions
+            </button>
           </li>
           <!-- <li class="menu-item">
             <button class="btn btn-warning" (click)="flyToUser()">Back To User</button>
@@ -105,41 +195,65 @@ right: 0;">
       </div>
 
       <div class="outer-point2">
-        <app-drawing-menu class="burgermenu2" (click)="burgerTime2()"  [isClosed]="burgertime2" style="flex: auto;display: inline-block;"></app-drawing-menu>
+        <app-drawing-menu
+          class="burgermenu2"
+          (click)="burgerTime2()"
+          [isClosed]="burgertime2"
+          style="flex: auto; display: inline-block"
+        ></app-drawing-menu>
       </div>
-<!--
+      <!--
       <div class="outer-point2">
         <app-hamburger-menu class="burgermenu2" (click)="burgerTime2()"  [isClosed]="burgertime2" style="flex: auto;display: inline-block;"></app-hamburger-menu>
       </div> -->
-
-
     </div>
   </mat-sidenav>
 
   <!-- PAINTING MENU -->
-  <mat-sidenav #sidenav2 mode="side" position="start" role="navigation" class="sidenav-wv" style="
-  z-index: 999;
-  visibility: visible;
-  top: 29vh !important;    background: black;">
-    <div class="container" style="min-width: 220px;    max-width: 296px;">
-      <div style="padding-top: 10px; padding-right: 20px;display: inline-block;">
-        <ol style="list-style: none;">
+  <mat-sidenav
+    #sidenav2
+    mode="side"
+    position="start"
+    role="navigation"
+    class="sidenav-wv"
+    style="
+      z-index: 999;
+      visibility: visible;
+      top: 29vh !important;
+      background: black;
+    "
+  >
+    <div class="container" style="min-width: 220px; max-width: 296px">
+      <div
+        style="padding-top: 10px; padding-right: 20px; display: inline-block"
+      >
+        <ol style="list-style: none">
           <!-- PAINTING TOGGLE MUST BE THE VERY TOP OBJECT -->
-          <mat-slide-toggle #paintingToggle color="accent"
-          style="z-index:999999;color:green;"
-          style="transform: scale(2); margin-left: 74px;"
-          (toggleChange)="paintToggleChange()"
-          [checked] = "paintingChecked"
-          [disabled] = "paintingSwitchDisabled">
-        </mat-slide-toggle>
-          <li [ngClass]=" paintingOn ? 'menu-item rainbow' : 'menu-item rainbow1'">
+          <mat-slide-toggle
+            #paintingToggle
+            color="accent"
+            style="z-index: 999999; color: green"
+            style="transform: scale(2); margin-left: 74px"
+            (toggleChange)="paintToggleChange()"
+            (click)="paintingEvent($event)"
+            [checked]="paintingChecked"
+            [disabled]="paintingSwitchDisabled"
+          >
+          </mat-slide-toggle>
+          <li
+            [ngClass]="paintingOn ? 'menu-item rainbow' : 'menu-item rainbow1'"
+          >
             Painting mode
-           </li>
-          <li class="menu-item">
-            <button class="btn btn-info" (click)="deletePainting()">Delete Painting</button>
           </li>
           <li class="menu-item">
-            <button class="btn btn-info">Dummy</button>
+            <button class="btn btn-info" (click)="deletePainting()">
+              Delete Painting
+            </button>
+          </li>
+          <li class="menu-item">
+            <button class="btn btn-info" (click)="emptyGeoJSONLine()">
+              Delete Painted Route
+            </button>
           </li>
           <li class="menu-item">
             <button class="btn btn-info">Dummy</button>
@@ -157,28 +271,27 @@ right: 0;">
       </div>
 
       <div class="outer-point3">
-        <app-painting-menu class="burgermenu3" (click)="burgerTime3()"  [isClosed]="burgertime3" style="flex: auto;display: inline-block;"></app-painting-menu>
+        <app-painting-menu
+          class="burgermenu3"
+          (click)="burgerTime3()"
+          [isClosed]="burgertime3"
+          style="flex: auto; display: inline-block"
+        ></app-painting-menu>
       </div>
-<!--
+      <!--
       <div class="outer-point2">
         <app-hamburger-menu class="burgermenu2" (click)="burgerTime2()"  [isClosed]="burgertime2" style="flex: auto;display: inline-block;"></app-hamburger-menu>
       </div> -->
-
-
     </div>
   </mat-sidenav>
 
-  <mat-sidenav-content>
-
-
-
+  <mat-sidenav-content style="overflow: hidden">
     <!-- The circle that follows mousepointer -->
-<!-- <div class="cursor"></div> -->
+    <!-- <div class="cursor"></div> -->
 
-<div>
-
-<!-- buttons -->
-  <!-- <div  style="z-index: 11;position: absolute;display: flex;flex-direction: column-reverse;bottom: 1em;">
+    <div>
+      <!-- buttons -->
+      <!-- <div  style="z-index: 11;position: absolute;display: flex;flex-direction: column-reverse;bottom: 1em;">
 
 
     <nav class="menu">
@@ -199,24 +312,24 @@ right: 0;">
      </nav>
   </div> -->
 
-  <div class="box">
-    <div #mapdiv ></div>
-  </div>
+      <div class="box" style="overflow: hidden">
+        <div #mapdiv></div>
+      </div>
 
-<div style="z-index: 10;" class="map" id="map">
-
-
-
-</div>
-
-</div>
-<div class="heading" (click)="burgerTime()"  ><!-- *ngIf="distanceToRoskis > 6" -->
-  <app-distance [distance]="distance" [digit]="digit" [duration]="duration" [destination]="destination" [hideDistance]="hideDistance"></app-distance>
-</div>
-
-</mat-sidenav-content>
+      <div style="z-index: 10; overflow: hidden" class="map" id="map"></div>
+    </div>
+    <div class="heading" (click)="burgerTime()">
+      <!-- *ngIf="distanceToRoskis > 6" -->
+      <app-distance
+        [distance]="distance"
+        [digit]="digit"
+        [duration]="duration"
+        [destination]="destination"
+        [hideDistance]="hideDistance"
+      ></app-distance>
+    </div>
+  </mat-sidenav-content>
 </mat-sidenav-container>
-
 
 <!-- <button class="btn btn-info" hidden (click)="makeObject()">New objectArray</button>
 <button class="btn btn-info" hidden (click)="sendToSpace()">Send to Cloud</button> -->
@@ -226,7 +339,6 @@ right: 0;">
 </button> -->
 
 <!-- This template displays the overlay content and is connected to the button -->
-
 
 <!-- this is to upload data -->
 <!-- <ng-template
@@ -245,8 +357,7 @@ right: 0;">
   </ul>
 </ng-template> -->
 
-
- <!-- <div *ngFor="let marker of markersToDisplay"> | async
+<!-- <div *ngFor="let marker of markersToDisplay"> | async
   <button class="btn btn-primary" (click)="flyTo(marker)">{{ marker.properties.message }}</button>
   <button class="btn btn-success" (click)="getRoute(marker.geometry.coordinates)">Route to: {{ marker.properties.message }}</button>
   <button class="btn btn-warning" (click)="removeMarker(marker)">Delete</button>
@@ -283,5 +394,3 @@ right: 0;">
     </div>
   </div>
 </div> -->
-
-
