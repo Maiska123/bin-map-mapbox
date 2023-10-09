@@ -14,8 +14,9 @@ import * as mapboxgl from 'mapbox-gl';
 import { GeoJson, FeatureCollection } from '../map';
 import { Subscription } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { AngularFireList } from '@angular/fire/database';
+import { AngularFireList } from '@angular/fire/compat/database';
 import Swal from 'sweetalert2';
+
 import { MatSidenav } from '@angular/material/sidenav';
 import { FormControl } from '@angular/forms';
 
@@ -112,7 +113,7 @@ export class MapBoxComponent implements OnInit {
   gpx: any;
   routeActivated: boolean = false;
   source: any;
-  markers: AngularFireList<any>;
+  markers: AngularFireList<any> | null;
   markersToDisplay: Set<any> = new Set();
   flyToNearestBin: boolean = true;
   flyToBinChecked: boolean = true;
@@ -346,7 +347,7 @@ export class MapBoxComponent implements OnInit {
         preConfirm: () => {
           Swal.showLoading();
           return this.doAsyncTask()
-            .then((data) => Swal.insertQueueStep(data))
+            .then((data) => Swal.insertQueueStep(data as any))
             .catch(() => {
               Swal.insertQueueStep({
                 icon: 'error',
@@ -413,11 +414,14 @@ export class MapBoxComponent implements OnInit {
 
     let single = this.oneItem.nativeElement.innerHTML;
 
-    this.counterFunc(single, this.oneItem, 7000);
+    if ( single ) 
+    {
+      this.counterFunc(single, this.oneItem, 7000);
 
-    this.count.forEach((item) => {
-      _this.counterFunc(item.nativeElement.innerHTML, item, 2000);
-    });
+      this.count.forEach((item) => {
+        _this.counterFunc(item.nativeElement.innerHTML, item, 2000);
+      });
+    }
   }
 
   counterFunc(end: number, element: any, duration: number) {
@@ -532,7 +536,7 @@ export class MapBoxComponent implements OnInit {
     stuff3[0].style.zIndex = '999';
     stuff3[0].style.transform = 'scale(1.5) translate(-10px, 40px)';
 
-    this.animateCount();
+    if (this.oneItem) this.animateCount();
 
     this.directions;
   }
@@ -744,7 +748,7 @@ export class MapBoxComponent implements OnInit {
         console.log('did fetch markers from online');
       } else {
         this.markers = null;
-        this.offlineMarkerData = JSON.parse(localStorage.getItem('markers'));
+        this.offlineMarkerData = JSON.parse(localStorage.getItem('markers') ?? '{}');
         this.offlineData = new FeatureCollection(this.offlineMarkerData);
 
         console.log('markers from offline');
@@ -761,7 +765,7 @@ export class MapBoxComponent implements OnInit {
       this.source = this.map.getSource('firebase');
 
       if (noLocalData) {
-        this.markers.valueChanges().subscribe((markers) => {
+        this.markers?.valueChanges().subscribe((markers) => {
           var valueChanged: boolean = false;
 
           let data = new FeatureCollection(markers);
@@ -1269,7 +1273,7 @@ export class MapBoxComponent implements OnInit {
   }
 
   getNearestPoint(fromCoordindexes: any[], pointCoordinates: any[]): number {
-    var arrayOfMatches = [];
+    var arrayOfMatches : any[] = [];
     var routeLengths: any[] = [[], []];
     var arrayOfMarkers = Array.from(this.markersToDisplay);
 

@@ -1,7 +1,7 @@
-import { AngularFireDatabase } from '@angular/fire/database';
+import { AngularFireDatabase } from '@angular/fire/compat/database';
 import { Injectable } from '@angular/core';
 import { GeoJson } from './map';
-import 'firebase/firestore';
+import '@angular/fire/compat/firestore';
 import { Observable } from 'rxjs';
 
 @Injectable()

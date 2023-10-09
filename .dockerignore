@@ -1,0 +1,5 @@
+node_modules/
+demos/
+docker-compose.yml
+dockerfile
+*-lock.json

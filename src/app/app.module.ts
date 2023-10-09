@@ -13,13 +13,19 @@ import { AppComponent } from './app.component';
 import { MapBoxComponent } from './map-box/map-box.component';
 import { FormsModule } from '@angular/forms';
 import { HelloComponent } from './hello/hello.component';
-import { AngularFireModule } from '@angular/fire';
-import { AngularFireDatabaseModule } from 'angularfire2/database';
-import { AngularFirestore } from '@angular/fire/firestore';
+import { provideFirebaseApp, getApp, initializeApp } from '@angular/fire/app';
+import { getFirestore, provideFirestore } from '@angular/fire/firestore';
+// import { AngularFireDatabaseModule } from 'angularfire2/database';
+import { AngularFireDatabaseModule } from '@angular/fire/compat/database';
+// import { AngularFirestore } from '@angular/fire/firestore';
+import { AngularFirestoreModule } from '@angular/fire/compat/firestore';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { OverlayModule } from "@angular/cdk/overlay";
-import {MatSidenavModule} from '@angular/material/sidenav';
-import {MatSlideToggleModule} from '@angular/material/slide-toggle';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { SweetAlert2Module } from '@sweetalert2/ngx-sweetalert2';
+import { AngularFireModule } from '@angular/fire/compat';
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -32,17 +38,21 @@ import {MatSlideToggleModule} from '@angular/material/slide-toggle';
     PaintingMenuComponent
   ],
   imports: [
-    BrowserModule,
-    AppRoutingModule,
-    FormsModule,
-    OverlayModule,
     AngularFireModule.initializeApp(environment.firebaseConfig),
     AngularFireDatabaseModule,
+    AngularFirestoreModule.enablePersistence({ synchronizeTabs: true }),
+    AppRoutingModule,
     BrowserAnimationsModule,
+    BrowserModule,
+    FormsModule,
     MatSidenavModule,
-    MatSlideToggleModule
+    MatSlideToggleModule,
+    OverlayModule,
+    provideFirebaseApp(() => initializeApp(environment.firebaseConfig)),
+    provideFirestore(() => getFirestore()),
+    SweetAlert2Module.forRoot(),
   ],
-  providers: [MapService, AngularFirestore],
+  providers: [MapService, AngularFirestoreModule],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

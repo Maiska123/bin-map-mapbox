@@ -41,7 +41,7 @@ export class DistanceComponent implements OnInit {
   ngOnChanges(changes: SimpleChanges) {
     if (changes['digit']) {
       // this.lastDigit = this.digit;
-      this.animateCount();
+      if (this.animatedDigit) this.animateCount();
     }
     // console.log('from distance: '+ this.digit)
     // console.log('from distance: '+ this.distance)
